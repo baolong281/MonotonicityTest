@@ -1,0 +1,4 @@
+useDynLib(MonotonicityTest, .registration=TRUE)
+importFrom(Rcpp, evalCpp)
+importFrom("stats", "bw.nrd", "dnorm")
+exportPattern("monotonicity_test")
