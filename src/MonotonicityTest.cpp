@@ -1,10 +1,12 @@
 #include "RcppArmadillo.h"
 // [[Rcpp::depends(RcppArmadillo)]]
 
-
 #include <vector>
 using namespace Rcpp;
 
+// Update P and w matrices using recursive least squares
+// Update for a single x, y pair
+// https://osquant.com/papers/recursive-least-squares-linear-regression/#:~:text=Rather%20than%20recalculating%20a%20least,greater%20emphasis%20on%20recent%20data.
 List rls_update_cpp(arma::mat &P, arma::mat &w, arma::mat &x, float y) {
   arma::mat numerator = P * x;
   arma::mat denom = 1 + (x.t() * P * x);
@@ -18,17 +20,19 @@ List rls_update_cpp(arma::mat &P, arma::mat &w, arma::mat &x, float y) {
 }
 
 // [[Rcpp::export]]
+// Calculate the hall statistic given a X and Y vector
+// Uses recursive least squares instead of ordinary least squares at each step
 double get_t_from_data_cpp(const arma::vec &x, const arma::vec &y, int m) {
   int n = x.size();
 
+  // If the length of the data is less than window size m, return NA
   if (n - m <= 0) {
     return NA_REAL;
   }
 
   auto max_t_m = -INFINITY;
 
-  return(4.0);
-
+  // Start at each point
   for (int r = 0; r <= n - m; r++) {
     // Initialize P and w
     arma::mat P = arma::eye<arma::mat>(2, 2) * 1e9;
@@ -38,7 +42,7 @@ double get_t_from_data_cpp(const arma::vec &x, const arma::vec &y, int m) {
     double curr_sum = 0.0;
     int curr_n = 0;
 
-    // calculate the initial window
+    // Calculate P and w for the first m points
     for (int ind = r; ind < r + m; ind++) {
       arma::colvec x_vec = {1, x[ind]}; // Feature vector (1, x)
       List new_state = rls_update_cpp(P, w, x_vec, y[ind]);
@@ -52,6 +56,7 @@ double get_t_from_data_cpp(const arma::vec &x, const arma::vec &y, int m) {
 
     double curr_mean = curr_sum / curr_n;
 
+    // Calculate P and w for the remaining points
     for (int s = r + m; s < n; s++) {
       arma::colvec x_vec = {1, x[s]}; // f vector (1, x)
       List new_state = rls_update_cpp(P, w, x_vec, y[s]);
@@ -64,7 +69,7 @@ double get_t_from_data_cpp(const arma::vec &x, const arma::vec &y, int m) {
       curr_mean = curr_sum / curr_n;
 
       double q_sq = std::sqrt(
-        arma::accu(arma::square(curr_x - curr_mean))); // sqrt of q stat
+          arma::accu(arma::square(curr_x - curr_mean))); // sqrt of q stat
 
       double t_stat = -w(1) * q_sq; // t-statistic
 
@@ -76,4 +81,3 @@ double get_t_from_data_cpp(const arma::vec &x, const arma::vec &y, int m) {
 
   return max_t_m;
 }
-

@@ -19,20 +19,24 @@ monotonicity_test <- function(X,
                       ncores = 1) {
   N <- length(X)
 
-  # make sure data is sorted
+  # Data needs to be sorted for the test wo work
   data_order <- order(X)
   X <- X[data_order]
   Y <- Y[data_order]
 
+  # Get the hall statistic
   t_stat <- get_t_from_data_cpp(X, Y, m)
 
   residuals <-
     calc_residuals_from_estimator(X, Y, bandwidth = bandwidth)
 
   boot_func <- function(i) {
+    # Resample each x and y value
+    # We can mix them under the null
     resampled_x_ind <- sample(1:N, size=N, replace=TRUE)
     resampled_y_ind <- sample(1:N, size=N, replace=TRUE)
 
+    # Order both
     resampled_x <- X[resampled_x_ind]
     resampled_y <- X[resampled_x_ind]
 
@@ -45,6 +49,7 @@ monotonicity_test <- function(X,
     return(t_stat)
   }
 
+  # Do the bootstrap on multiple cores
   t_vals <-
     unlist(parallel::mclapply(1:boot_num, boot_func, mc.cores = ncores))
 
