@@ -19,9 +19,9 @@ List rls_update_cpp(arma::mat &P, arma::mat &w, arma::mat &x, float y) {
   return List::create(Rcpp::Named("P") = P_update, Rcpp::Named("w") = w_update);
 }
 
-// [[Rcpp::export]]
 // Calculate the hall statistic given a X and Y vector
 // Uses recursive least squares instead of ordinary least squares at each step
+// [[Rcpp::export]]
 double get_t_from_data_cpp(const arma::vec &x, const arma::vec &y, int m) {
   int n = x.size();
 
