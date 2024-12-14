@@ -9,7 +9,7 @@ Description: More about what it does (maybe more than one line)
 License: GPL-3
 Encoding: UTF-8
 RoxygenNote: 7.3.2
-LinkingTo: Rcpp
+LinkingTo: Rcpp, RcppEigen
 Imports: Rcpp (>= 1.0.13-1), parallel
 Suggests: testthat (>= 3.0.0)
 Config/testthat/edition: 3

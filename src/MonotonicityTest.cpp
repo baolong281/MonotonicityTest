@@ -1,27 +1,25 @@
-#include "Matrix.h"
-#include "Rcpp/vector/instantiation.h"
 #include <Rcpp.h>
-#include <iostream>
+#include <RcppEigen.h>
 #include <tuple>
 
 using namespace Rcpp;
-using namespace matrix_utils;
+using namespace Eigen;
 
 // Update P and w matrices using recursive least squares
 // Update for a single x, y pair
 // https://osquant.com/papers/recursive-least-squares-linear-regression/#:~:text=Rather%20than%20recalculating%20a%20least,greater%20emphasis%20on%20recent%20data.
-std::tuple<NumericMatrix, NumericMatrix>
-rls_update_cpp(NumericMatrix &P, NumericMatrix &w, NumericMatrix &x, double y) {
+std::tuple<MatrixXd, MatrixXd> rls_update_cpp(const MatrixXd &P,
+                                              const MatrixXd &w,
+                                              const VectorXd &x, double y) {
   // Calculate numerator and denominator
-  NumericMatrix numerator = P * x;
+  MatrixXd Px = P * x; // Precompute since we use it multiple times
+  MatrixXd xT_P = x.transpose() * P;
 
-  NumericMatrix xT = transpose(x);
+  double denom = 1 + (xT_P * x)(0, 0);
+  double final_term = y - (x.transpose() * w)(0, 0);
 
-  double denom = 1 + as<double>(wrap(xT * P * x));
-  double final_term = as<double>(y - xT * w);
-
-  auto w_update = w + ((numerator / denom) * final_term);
-  auto P_update = P - ((P * x * xT * P) / denom);
+  auto w_update = w + ((Px / denom) * final_term);
+  auto P_update = P - ((Px * xT_P) / denom);
 
   return std::make_tuple(P_update, w_update);
 }
@@ -29,8 +27,9 @@ rls_update_cpp(NumericMatrix &P, NumericMatrix &w, NumericMatrix &x, double y) {
 // Calculate the hall statistic given a X and Y vector
 // Uses recursive least squares instead of ordinary least squares at each step
 // [[Rcpp::export]]
-double get_t_from_data_cpp(NumericVector &x, const NumericVector &y, int m) {
-  int n = x.length();
+double get_t_from_data_cpp(const Eigen::VectorXd &x, const Eigen::VectorXd &y,
+                           int m) {
+  int n = x.size();
 
   // If the length of the data is less than window size m, return NA
   if (n - m <= 0) {
@@ -42,23 +41,23 @@ double get_t_from_data_cpp(NumericVector &x, const NumericVector &y, int m) {
   // Start at each point
   for (int r = 0; r <= n - m; r++) {
     // Initialize P and w
-    NumericMatrix P = NumericMatrix(2);
-    P.fill_diag(1e9);
+    MatrixXd P = MatrixXd::Identity(2, 2) * 1e9;
 
     // W is a 2x1 matrix where row 1 is the intercept and row 2 is the slope
-    NumericMatrix w = NumericMatrix(2, 1);
+    MatrixXd w = MatrixXd::Zero(2, 1);
 
-    NumericVector x_window(n - r);
+    VectorXd x_window(n - r);
     double curr_sum = 0.0;
     int curr_n = 0;
     int curr_ind = 0;
 
     // Calculate P and w for the first m points
     for (int ind = r; ind < r + m; ind++) {
-      NumericVector x_vec = NumericVector::create(1, x[ind]);
-      NumericMatrix x_colvec = create_colvec(x_vec);
+      VectorXd x_vec(2); // Create a column vector of size 2
+      x_vec(0) = 1.0;    // First index is 1
+      x_vec(1) = x[ind]; // Second index is the value x[ind]
 
-      auto new_state = rls_update_cpp(P, w, x_colvec, y[ind]);
+      auto new_state = rls_update_cpp(P, w, x_vec, y[ind]);
       P = std::get<0>(new_state);
       w = std::get<1>(new_state);
 
@@ -71,10 +70,11 @@ double get_t_from_data_cpp(NumericVector &x, const NumericVector &y, int m) {
 
     // Calculate P and w for the remaining points
     for (int s = r + m; s < n; s++) {
-      NumericVector x_vec = NumericVector::create(1, x[s]);
-      NumericMatrix x_colvec = create_colvec(x_vec);
+      VectorXd x_vec(2);
+      x_vec(0) = 1.0;
+      x_vec(1) = x[s];
 
-      auto new_state = rls_update_cpp(P, w, x_colvec, y[s]);
+      auto new_state = rls_update_cpp(P, w, x_vec, y[s]);
 
       P = std::get<0>(new_state);
       w = std::get<1>(new_state);
@@ -84,12 +84,13 @@ double get_t_from_data_cpp(NumericVector &x, const NumericVector &y, int m) {
       curr_n++;
       curr_mean = curr_sum / curr_n;
 
-      NumericVector diff = x_window - curr_mean;
-      double sum_sq = sum(diff * diff);
-      double q_sq = sqrt(sum_sq);
+      double q_sq =
+          std::sqrt((x_window.head(curr_n).array() - curr_mean).square().sum());
 
-      double t_stat = -w(1, 0) * q_sq; // t-statistic
+      // Calculate the t-statistic
+      double t_stat = -w(1, 0) * q_sq;
 
+      // Update max_t_m if necessary
       if (t_stat > max_t_m) {
         max_t_m = t_stat;
       }

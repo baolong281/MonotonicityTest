@@ -1,0 +1,4 @@
+-I/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/Rcpp/include
+-I/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/include
+-I/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/RcppEigen/include
+
