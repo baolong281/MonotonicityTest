@@ -2,33 +2,50 @@
 % Please edit documentation in R/main.R
 \name{monotonicity_test}
 \alias{monotonicity_test}
-\title{Do the monotonicity test}
+\title{Perform Monotonicity Test}
 \usage{
 monotonicity_test(
   X,
   Y,
   bandwidth = bw.nrd(X) * (length(X)^-0.1),
   boot_num = 200,
-  m = 10,
-  ncores = 1
+  m = floor(0.05 * length(X)),
+  ncores = 1,
+  negative = FALSE
 )
 }
 \arguments{
-\item{X}{Vector of x values}
+\item{X}{Numeric vector of predictor variable values. Must not contain missing or infinite values.}
 
-\item{Y}{Vector of Y values}
+\item{Y}{Numeric vector of response variable values. Must not contain missing or infinite values.}
 
-\item{bandwidth}{Kernel bandwidth}
+\item{bandwidth}{Numeric value for the kernel bandwidth. Default is calculated as \code{bw.nrd(X) * (length(X) ^ -0.1)}.}
 
-\item{boot_num}{Number of bootstrap samples}
+\item{boot_num}{Integer specifying the number of bootstrap samples. Default is \code{200}.}
 
-\item{m}{M parameter described in (paper)}
+\item{m}{Integer parameter used in the calculation of the test statistic. Corresponds to the minimum window size
+to calculate the test statistic over. Default is \code{floor(0.05) * length(X)}.}
 
-\item{ncores}{Number of cores to run on}
+\item{ncores}{Integer specifying the number of cores to use for parallel processing. Default is \code{1}.}
+
+\item{negative}{Logical value indicating whether to test for a monotonic decreasing (negative) relationship. Default is \code{FALSE}.}
 }
 \value{
-List with fields p, dist, stat
+A list with the following components:
+\describe{
+  \item{\code{p}}{The p-value of the test.}
+  \item{\code{dist}}{The distribution of test statistics from bootstrap samples.}
+  \item{\code{stat}}{The test statistic calculated from the original data.}
+}
 }
 \description{
-Does the monotonicity test as described in (Hall and Heckman)
+Performs a monotonicity test between the vectors \code{X} and \code{Y} as described in Hall and Heckman (2000).
+This function uses a bootstrap approach to test for monotonicity in a nonparametric regression setting.
+}
+\note{
+For large datasets (e.g., \eqn{n \geq 6500}) this function may require significant computation time due to having to compute the statistic for every possible interval.
+Consider reducing \code{boot_num}, using a subset of the data, or using parallel processing with \code{ncores} to improve performance.
+}
+\references{
+Hall, P., & Heckman, N. E. (2000). Testing for monotonicity of a regression mean by calibrating for linear functions. \emph{The Annals of Statistics}, \strong{28}(1), 20–39.
 }

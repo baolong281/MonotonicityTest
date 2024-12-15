@@ -1,22 +1,45 @@
-#' Do the monotonicity test
+#' Perform Monotonicity Test
 #'
-#' Does the monotonicity test as described in (Hall and Heckman)
+#' Performs a monotonicity test between the vectors \code{X} and \code{Y} as described in Hall and Heckman (2000).
+#' This function uses a bootstrap approach to test for monotonicity in a nonparametric regression setting.
 #'
-#'
-#' @param X Vector of x values
-#' @param Y Vector of Y values
-#' @param bandwidth Kernel bandwidth
-#' @param boot_num Number of bootstrap samples
-#' @param m M parameter described in (paper)
-#' @param ncores Number of cores to run on
-#' @return List with fields p, dist, stat
+#' @param X Numeric vector of predictor variable values. Must not contain missing or infinite values.
+#' @param Y Numeric vector of response variable values. Must not contain missing or infinite values.
+#' @param bandwidth Numeric value for the kernel bandwidth. Default is calculated as \code{bw.nrd(X) * (length(X) ^ -0.1)}.
+#' @param boot_num Integer specifying the number of bootstrap samples. Default is \code{200}.
+#' @param m Integer parameter used in the calculation of the test statistic. Corresponds to the minimum window size
+#' to calculate the test statistic over. Default is \code{floor(0.05) * length(X)}.
+#' @param ncores Integer specifying the number of cores to use for parallel processing. Default is \code{1}.
+#' @param negative Logical value indicating whether to test for a monotonic decreasing (negative) relationship. Default is \code{FALSE}.
+#' @return A list with the following components:
+#' \describe{
+#'   \item{\code{p}}{The p-value of the test.}
+#'   \item{\code{dist}}{The distribution of test statistics from bootstrap samples.}
+#'   \item{\code{stat}}{The test statistic calculated from the original data.}
+#' }
+#' @note For large datasets (e.g., \eqn{n \geq 6500}) this function may require significant computation time due to having to compute the statistic for every possible interval.
+#' Consider reducing \code{boot_num}, using a subset of the data, or using parallel processing with \code{ncores} to improve performance.
+#' @references
+#'   Hall, P., & Heckman, N. E. (2000). Testing for monotonicity of a regression mean by calibrating for linear functions. \emph{The Annals of Statistics}, \strong{28}(1), 20–39.
 #' @export
 monotonicity_test <- function(X,
                       Y,
                       bandwidth = bw.nrd(X) * (length(X) ^ -0.1),
                       boot_num = 200,
-                      m = 10,
-                      ncores = 1) {
+                      m = floor(0.05 * length(X)),
+                      ncores = 1,
+                      negative=FALSE
+                      ) {
+
+  # Check if values are NA, NaN or infinite.
+  if (any(!is.finite(X)) || any(!is.finite(Y))) {
+    stop("X and Y must contain only finite values (no NA, NaN, or Inf).")
+  }
+
+  # Invert the data if testing for negativity
+  if(negative) {
+    Y <- -Y
+  }
 
   if(length(X) != length(Y)) {
     stop("X and Y must be the same length.")
@@ -68,26 +91,20 @@ monotonicity_test <- function(X,
   return(list(p = p_val, dist = t_vals, stat = t_stat))
 }
 
-
-# Get estimates with Nadaraya Watson kernel regression
-watson_est <- function(X, Y, preds, bandwidth) {
-  kernel_weights_x <-
-    sapply(preds, function(x_i)
-      dnorm((X - x_i) / bandwidth) / bandwidth)
-  kernel_weights_y <- kernel_weights_x * Y
-
-  return(sapply(1:length(preds), function(i)
-    sum(
-      kernel_weights_y[, i] / sum(kernel_weights_x[, i])
-    )))
-}
-
-# Calculate the residuals after doing kernel regression
-calc_residuals_from_estimator <- function(X, Y, bandwidth) {
-  return(Y - watson_est(X, Y, preds = X, bandwidth = bandwidth))
-}
-
-watson_visual <-
+#' Generate Kernel Plot
+#'
+#' Creates a scatter plot of the input vectors `X` and `Y`, and overlays a Nadaraya-Watson kernel regression curve using the specified bandwidth.
+#'
+#' @param X Vector of x values.
+#' @param Y Vector of y values.
+#' @param bandwidth Kernel bandwidth used for the Nadaraya-Watson estimator. Default is calculated as \code{bw.nrd(X) * (length(X) ^ -0.1)}.
+#' @return A recorded plot object containing the scatter plot with the kernel regression curve.
+#' @references
+#'   Nadaraya, E. A. (1964). On estimating regression. \emph{Theory of Probability and Its Applications}, \strong{9}(1), 141–142.
+#'
+#'   Watson, G. S. (1964). Smooth estimates of regression functions. \emph{Sankhyā: The Indian Journal of Statistics, Series A}, 359-372.
+#' @export
+create_kernel_plot <-
   function(X, Y, bandwidth = bw.nrd(X) * (length(X) ^ -0.1)) {
     # Set up the range for the x-axis
     x_range <-
@@ -106,3 +123,20 @@ watson_visual <-
     return(recordPlot())
   }
 
+# Get estimates with Nadaraya Watson kernel regression
+watson_est <- function(X, Y, preds, bandwidth) {
+  kernel_weights_x <-
+    sapply(preds, function(x_i)
+      dnorm((X - x_i) / bandwidth) / bandwidth)
+  kernel_weights_y <- kernel_weights_x * Y
+
+  return(sapply(1:length(preds), function(i)
+    sum(
+      kernel_weights_y[, i] / sum(kernel_weights_x[, i])
+    )))
+}
+
+# Calculate the residuals after doing kernel regression
+calc_residuals_from_estimator <- function(X, Y, bandwidth) {
+  return(Y - watson_est(X, Y, preds = X, bandwidth = bandwidth))
+}
