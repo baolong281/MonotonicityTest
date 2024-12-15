@@ -2,7 +2,7 @@
 
 ## TODO
 
-- [ ] Write examples and descriptions
-- [ ] More verbose tests
-- [ ] Change parlapply to work with windows
-- [ ] Add plots
+-   [ ] Write examples and descriptions
+-   [x] More verbose tests
+-   [x] Change parlapply to work with windows
+-   [ ] Add plots

@@ -12,4 +12,7 @@ test_that("Check if main function works", {
                                         ncores = 1)
 
   expect_equal(boot_num, length(res$dist))
+  expect_type(res$p, "double")
+  expect_type(res$stat, "double")
+  expect_true(is.vector(res$dist))
 })

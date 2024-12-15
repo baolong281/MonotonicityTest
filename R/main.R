@@ -38,7 +38,7 @@ monotonicity_test <- function(X,
 
     # Order both
     resampled_x <- X[resampled_x_ind]
-    resampled_y <- X[resampled_x_ind]
+    resampled_y <- Y[resampled_y_ind]
 
     resample_order <- order(resampled_x)
 
@@ -50,8 +50,12 @@ monotonicity_test <- function(X,
   }
 
   # Do the bootstrap on multiple cores
+  cl <- parallel::makeCluster(ncores)
+  parallel::clusterExport(cl, c("X", "Y", "N", "m", "get_t_from_data_cpp"), envir =
+                  environment())
+
   t_vals <-
-    unlist(parallel::mclapply(1:boot_num, boot_func, mc.cores = ncores))
+    unlist(parallel::parLapply(cl, 1:boot_num, boot_func))
 
   p_val <- sum(t_vals >= t_stat) / length(t_vals)
   return(list(p = p_val, dist = t_vals, stat = t_stat))
