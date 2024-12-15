@@ -11,22 +11,22 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// get_t_from_data_cpp
-double get_t_from_data_cpp(const Eigen::VectorXd& x, const Eigen::VectorXd& y, int m);
-RcppExport SEXP _MonotonicityTest_get_t_from_data_cpp(SEXP xSEXP, SEXP ySEXP, SEXP mSEXP) {
+// get_hall_stat
+double get_hall_stat(const Eigen::VectorXd& x, const Eigen::VectorXd& y, int m);
+RcppExport SEXP _MonotonicityTest_get_hall_stat(SEXP xSEXP, SEXP ySEXP, SEXP mSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type x(xSEXP);
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type y(ySEXP);
     Rcpp::traits::input_parameter< int >::type m(mSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_t_from_data_cpp(x, y, m));
+    rcpp_result_gen = Rcpp::wrap(get_hall_stat(x, y, m));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_MonotonicityTest_get_t_from_data_cpp", (DL_FUNC) &_MonotonicityTest_get_t_from_data_cpp, 3},
+    {"_MonotonicityTest_get_hall_stat", (DL_FUNC) &_MonotonicityTest_get_hall_stat, 3},
     {NULL, NULL, 0}
 };
 

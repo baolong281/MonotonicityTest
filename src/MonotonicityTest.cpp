@@ -27,7 +27,7 @@ std::tuple<MatrixXd, MatrixXd> rls_update_cpp(const MatrixXd &P,
 // Calculate the hall statistic given a X and Y vector
 // Uses recursive least squares instead of ordinary least squares at each step
 // [[Rcpp::export]]
-double get_t_from_data_cpp(const Eigen::VectorXd &x, const Eigen::VectorXd &y,
+double get_hall_stat(const Eigen::VectorXd &x, const Eigen::VectorXd &y,
                            int m) {
   int n = x.size();
 

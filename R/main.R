@@ -17,15 +17,20 @@ monotonicity_test <- function(X,
                       boot_num = 200,
                       m = 10,
                       ncores = 1) {
+
+  if(length(X) != length(Y)) {
+    stop("X and Y must be the same length.")
+  }
+
   N <- length(X)
 
-  # Data needs to be sorted for the test wo work
+  # Data needs to be sorted for the test to work
   data_order <- order(X)
   X <- X[data_order]
   Y <- Y[data_order]
 
-  # Get the hall statistic
-  t_stat <- get_t_from_data_cpp(X, Y, m)
+  # Get stat for actual dataset
+  t_stat <- get_hall_stat(X, Y, m)
 
   residuals <-
     calc_residuals_from_estimator(X, Y, bandwidth = bandwidth)
@@ -34,28 +39,30 @@ monotonicity_test <- function(X,
     # Resample each x and y value
     # We can mix them under the null
     resampled_x_ind <- sample(1:N, size=N, replace=TRUE)
-    resampled_y_ind <- sample(1:N, size=N, replace=TRUE)
+    resampled_residuals_ind <- sample(1:N, size=N, replace=TRUE)
 
     # Order both
     resampled_x <- X[resampled_x_ind]
-    resampled_y <- Y[resampled_y_ind]
+    resampled_residuals <- residuals[resampled_residuals_ind]
 
     resample_order <- order(resampled_x)
 
     resampled_x <- resampled_x[resample_order]
-    resampled_y <- resampled_y[resample_order]
+    resampled_residuals <- resampled_residuals[resample_order]
 
-    t_stat <- get_t_from_data_cpp(resampled_x, resampled_y, m)
+    t_stat <- get_hall_stat(resampled_x, resampled_residuals, m)
     return(t_stat)
   }
 
   # Do the bootstrap on multiple cores
   cl <- parallel::makeCluster(ncores)
-  parallel::clusterExport(cl, c("X", "Y", "N", "m", "get_t_from_data_cpp"), envir =
+  parallel::clusterExport(cl, c("X", "residuals", "N", "m", "get_hall_stat"), envir =
                   environment())
 
   t_vals <-
     unlist(parallel::parLapply(cl, 1:boot_num, boot_func))
+
+  parallel::stopCluster(cl)
 
   p_val <- sum(t_vals >= t_stat) / length(t_vals)
   return(list(p = p_val, dist = t_vals, stat = t_stat))
@@ -77,6 +84,25 @@ watson_est <- function(X, Y, preds, bandwidth) {
 
 # Calculate the residuals after doing kernel regression
 calc_residuals_from_estimator <- function(X, Y, bandwidth) {
-  return(X - watson_est(X, Y, preds = X, bandwidth = bandwidth))
+  return(Y - watson_est(X, Y, preds = X, bandwidth = bandwidth))
 }
+
+watson_visual <-
+  function(X, Y, bandwidth = bw.nrd(X) * (length(X) ^ -0.1)) {
+    # Set up the range for the x-axis
+    x_range <-
+      seq(min(X), max(X), length.out = 500)  # Fine grid for smooth curve
+
+    # Compute watson estimates
+    y_values <- watson_est(X, Y, x_range, bandwidth=bandwidth)
+
+    plot(X, Y,
+      main = paste("Nadaraya Watson", "bandwidth =", round(bandwidth, 4)),
+      xlab = "X", ylab = "Y", pch = 16)
+
+    # Add the smoothed curve
+    lines(x_range, y_values, col = "green", lwd = 5.0)
+
+    return(recordPlot())
+  }
 
