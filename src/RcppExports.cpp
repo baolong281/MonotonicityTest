@@ -11,6 +11,37 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// adaptive_test_stat
+double adaptive_test_stat(const Eigen::VectorXd& X, const Eigen::VectorXd& Y, const Eigen::VectorXd& sigma_sq, const Eigen::VectorXd& x_vals, const Eigen::VectorXd& h_vals, int k);
+RcppExport SEXP _MonotonicityTest_adaptive_test_stat(SEXP XSEXP, SEXP YSEXP, SEXP sigma_sqSEXP, SEXP x_valsSEXP, SEXP h_valsSEXP, SEXP kSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type sigma_sq(sigma_sqSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type x_vals(x_valsSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type h_vals(h_valsSEXP);
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    rcpp_result_gen = Rcpp::wrap(adaptive_test_stat(X, Y, sigma_sq, x_vals, h_vals, k));
+    return rcpp_result_gen;
+END_RCPP
+}
+// perform_adaptive_test
+double perform_adaptive_test(const Eigen::VectorXd& X, const Eigen::VectorXd& Y, const Eigen::VectorXd& x_grid, const Eigen::VectorXd& h_grid, int k);
+RcppExport SEXP _MonotonicityTest_perform_adaptive_test(SEXP XSEXP, SEXP YSEXP, SEXP x_gridSEXP, SEXP h_gridSEXP, SEXP kSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type x_grid(x_gridSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type h_grid(h_gridSEXP);
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    rcpp_result_gen = Rcpp::wrap(perform_adaptive_test(X, Y, x_grid, h_grid, k));
+    return rcpp_result_gen;
+END_RCPP
+}
 // get_hall_stat
 double get_hall_stat(const Eigen::VectorXd& x, const Eigen::VectorXd& y, int m);
 RcppExport SEXP _MonotonicityTest_get_hall_stat(SEXP xSEXP, SEXP ySEXP, SEXP mSEXP) {
@@ -26,6 +57,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_MonotonicityTest_adaptive_test_stat", (DL_FUNC) &_MonotonicityTest_adaptive_test_stat, 6},
+    {"_MonotonicityTest_perform_adaptive_test", (DL_FUNC) &_MonotonicityTest_perform_adaptive_test, 5},
     {"_MonotonicityTest_get_hall_stat", (DL_FUNC) &_MonotonicityTest_get_hall_stat, 3},
     {NULL, NULL, 0}
 };
