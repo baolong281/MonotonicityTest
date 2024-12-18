@@ -1,5 +1,7 @@
 useDynLib(MonotonicityTest, .registration=TRUE)
 importFrom(Rcpp, evalCpp)
+importFrom("grDevices", "recordPlot")
+importFrom("graphics", "lines")
 importFrom("stats", "bw.nrd", "dnorm")
 exportPattern("monotonicity_test")
 exportPattern("create_kernel_plot")

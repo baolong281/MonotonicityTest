@@ -3,6 +3,16 @@
 #' Performs a monotonicity test between the vectors \code{X} and \code{Y} as described in Hall and Heckman (2000).
 #' This function uses a bootstrap approach to test for monotonicity in a nonparametric regression setting.
 #'
+#' The test evaluates the following hypotheses:
+#'
+#' \strong{\eqn{H_0}}: The regression function is monotonic
+#' \itemize{
+#'   \item \emph{Non-decreasing} if \code{negative = FALSE}
+#'   \item \emph{Non-increasing} if \code{negative = TRUE}
+#' }
+#'
+#' \strong{\eqn{H_A}}: The regression function is not monotonic
+#'
 #' @param X Numeric vector of predictor variable values. Must not contain missing or infinite values.
 #' @param Y Numeric vector of response variable values. Must not contain missing or infinite values.
 #' @param bandwidth Numeric value for the kernel bandwidth. Default is calculated as \code{bw.nrd(X) * (length(X) ^ -0.1)}.
@@ -21,6 +31,15 @@
 #' Consider reducing \code{boot_num}, using a subset of the data, or using parallel processing with \code{ncores} to improve performance.
 #' @references
 #'   Hall, P., & Heckman, N. E. (2000). Testing for monotonicity of a regression mean by calibrating for linear functions. \emph{The Annals of Statistics}, \strong{28}(1), 20–39.
+#'
+#' @examples
+#' # Generate sample data
+#' X <- runif(100)
+#' Y <- X^2 + rnorm(100, sd = 0.1)
+#'
+#' # Perform monotonicity test
+#' result <- monotonicity_test(X, Y, boot_num=1)
+#' print(result$p)  # Display the p-value
 #' @export
 monotonicity_test <- function(X,
                       Y,
