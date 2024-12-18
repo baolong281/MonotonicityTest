@@ -1,11 +1,13 @@
 Package: MonotonicityTest
 Type: Package
-Title: Hall Test for Nonparametric Monotonicity Testing
+Title: Nonparametric Bootstrap Test for Regression Monotonicity
 Version: 1.0
 Author: Dylan Huynh
 Maintainer: Dylan Huynh <dylanhuynh@utexas.edu>
-Description: Provides tools for testing and visualizing monotonic relationships in regression analysis, 
-  including bootstrap-based tests and Nadaraya-Watson kernel regression plots.
+Description: Implements nonparametric bootstrap tests for detecting monotonicity
+  in regression functions from Hall, P. and Heckman, N. (2000) <doi:10.1214/aos/1016120363>
+  Includes tools for visualizing results using Nadaraya-Watson kernel regression and supports 
+  efficient computation with C++.
 License: GPL
 Encoding: UTF-8
 RoxygenNote: 7.3.2
