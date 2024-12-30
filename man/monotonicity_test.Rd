@@ -11,7 +11,8 @@ monotonicity_test(
   boot_num = 200,
   m = floor(0.05 * length(X)),
   ncores = 1,
-  negative = FALSE
+  negative = FALSE,
+  seed = NULL
 )
 }
 \arguments{
@@ -24,26 +25,29 @@ monotonicity_test(
 \item{boot_num}{Integer specifying the number of bootstrap samples. Default is \code{200}.}
 
 \item{m}{Integer parameter used in the calculation of the test statistic. Corresponds to the minimum window size
-to calculate the test statistic over. Default is \code{floor(0.05) * length(X)}.}
+to calculate the test statistic over or a "smoothing" parameter. Default is \code{floor(0.05 * length(X))}.}
 
 \item{ncores}{Integer specifying the number of cores to use for parallel processing. Default is \code{1}.}
 
 \item{negative}{Logical value indicating whether to test for a monotonic decreasing (negative) relationship. Default is \code{FALSE}.}
+
+\item{seed}{Optional integer for setting the random seed. If NULL (default), the global random state is used.}
 }
 \value{
 A list with the following components:
 \describe{
   \item{\code{p}}{The p-value of the test.}
-  \item{\code{dist}}{The distribution of test statistics from bootstrap samples.}
+  \item{\code{dist}}{The distribution of test statistic under the null from bootstrap samples.
+                     The length of \code{dist} is equal to \code{boot_num}}.
   \item{\code{stat}}{The test statistic calculated from the original data.}
 }
 }
 \description{
-Performs a monotonicity test between the vectors \code{X} and \code{Y} as described in Hall and Heckman (2000).
+Performs a monotonicity test between the vectors \eqn{X} and \eqn{Y} as described in Hall and Heckman (2000).
 This function uses a bootstrap approach to test for monotonicity in a nonparametric regression setting.
 }
 \details{
-\strong{The test evaluates the following hypotheses:}
+The test evaluates the following hypotheses:
 
 \strong{\eqn{H_0}}: The regression function is monotonic
 \itemize{
@@ -56,15 +60,28 @@ This function uses a bootstrap approach to test for monotonicity in a nonparamet
 \note{
 For large datasets (e.g., \eqn{n \geq 6500}) this function may require significant computation time due to having to compute the statistic for every possible interval.
 Consider reducing \code{boot_num}, using a subset of the data, or using parallel processing with \code{ncores} to improve performance.
+
+In addition to this, a minimum of 300 observations is recommended for kernel estimates to be reliable.
 }
 \examples{
+# Example 1: Usage on monotonic increasing function
 # Generate sample data
-X <- runif(100)
-Y <- X^2 + rnorm(100, sd = 0.1)
+seed <- 42
+set.seed(seed)
+# Generate sample data
+X <- runif(500)
+Y <- 4 * X + rnorm(500, sd = 1)
 
-# Perform monotonicity test
-result <- monotonicity_test(X, Y, boot_num=1)
-print(result$p)  # Display the p-value
+monotonicity_test(X, Y, boot_num=25, seed=seed)
+
+# Example 2: Usage on non-monotonic function
+seed <- 42
+set.seed(seed)
+# Generate sample data
+X <- runif(500)
+Y <- (X - 0.5) ^ 2 + rnorm(500, sd = 0.5)
+
+monotonicity_test(X, Y, boot_num=25, seed=seed)
 }
 \references{
 Hall, P., & Heckman, N. E. (2000). Testing for monotonicity of a regression mean by calibrating for linear functions. \emph{The Annals of Statistics}, \strong{28}(1), 20–39.

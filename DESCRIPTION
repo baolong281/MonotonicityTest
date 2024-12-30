@@ -16,4 +16,4 @@ Imports: Rcpp (>= 1.0.13-1), parallel, stats, graphics, grDevices
 Suggests: testthat (>= 3.0.0)
 Config/testthat/edition: 3
 NeedsCompilation: yes
-Packaged: 2024-12-05 21:18:49 UTC; dylanh
+Packaged: 2024-12-18 20:57:58 UTC; dylanh

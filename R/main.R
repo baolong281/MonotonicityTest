@@ -1,6 +1,6 @@
 #' Perform Monotonicity Test
 #'
-#' Performs a monotonicity test between the vectors \code{X} and \code{Y} as described in Hall and Heckman (2000).
+#' Performs a monotonicity test between the vectors \eqn{X} and \eqn{Y} as described in Hall and Heckman (2000).
 #' This function uses a bootstrap approach to test for monotonicity in a nonparametric regression setting.
 #'
 #' The test evaluates the following hypotheses:
@@ -18,28 +18,43 @@
 #' @param bandwidth Numeric value for the kernel bandwidth. Default is calculated as \code{bw.nrd(X) * (length(X) ^ -0.1)}.
 #' @param boot_num Integer specifying the number of bootstrap samples. Default is \code{200}.
 #' @param m Integer parameter used in the calculation of the test statistic. Corresponds to the minimum window size
-#' to calculate the test statistic over. Default is \code{floor(0.05) * length(X)}.
+#' to calculate the test statistic over or a "smoothing" parameter. Default is \code{floor(0.05 * length(X))}.
 #' @param ncores Integer specifying the number of cores to use for parallel processing. Default is \code{1}.
 #' @param negative Logical value indicating whether to test for a monotonic decreasing (negative) relationship. Default is \code{FALSE}.
+#' @param seed Optional integer for setting the random seed. If NULL (default), the global random state is used.
 #' @return A list with the following components:
 #' \describe{
 #'   \item{\code{p}}{The p-value of the test.}
-#'   \item{\code{dist}}{The distribution of test statistics from bootstrap samples.}
+#'   \item{\code{dist}}{The distribution of test statistic under the null from bootstrap samples.
+#'                      The length of \code{dist} is equal to \code{boot_num}}.
 #'   \item{\code{stat}}{The test statistic calculated from the original data.}
 #' }
 #' @note For large datasets (e.g., \eqn{n \geq 6500}) this function may require significant computation time due to having to compute the statistic for every possible interval.
 #' Consider reducing \code{boot_num}, using a subset of the data, or using parallel processing with \code{ncores} to improve performance.
+#'
+#' In addition to this, a minimum of 300 observations is recommended for kernel estimates to be reliable.
 #' @references
 #'   Hall, P., & Heckman, N. E. (2000). Testing for monotonicity of a regression mean by calibrating for linear functions. \emph{The Annals of Statistics}, \strong{28}(1), 20–39.
 #'
 #' @examples
+#' # Example 1: Usage on monotonic increasing function
 #' # Generate sample data
-#' X <- runif(100)
-#' Y <- X^2 + rnorm(100, sd = 0.1)
+#' seed <- 42
+#' set.seed(seed)
+#' # Generate sample data
+#' X <- runif(500)
+#' Y <- 4 * X + rnorm(500, sd = 1)
 #'
-#' # Perform monotonicity test
-#' result <- monotonicity_test(X, Y, boot_num=1)
-#' print(result$p)  # Display the p-value
+#' monotonicity_test(X, Y, boot_num=25, seed=seed)
+#'
+#' # Example 2: Usage on non-monotonic function
+#' seed <- 42
+#' set.seed(seed)
+#' # Generate sample data
+#' X <- runif(500)
+#' Y <- (X - 0.5) ^ 2 + rnorm(500, sd = 0.5)
+#'
+#' monotonicity_test(X, Y, boot_num=25, seed=seed)
 #' @export
 monotonicity_test <- function(X,
                       Y,
@@ -47,7 +62,8 @@ monotonicity_test <- function(X,
                       boot_num = 200,
                       m = floor(0.05 * length(X)),
                       ncores = 1,
-                      negative=FALSE
+                      negative = FALSE,
+                      seed = NULL
                       ) {
 
   # Check if values are NA, NaN or infinite.
@@ -98,6 +114,13 @@ monotonicity_test <- function(X,
 
   # Do the bootstrap on multiple cores
   cl <- parallel::makeCluster(ncores)
+
+  # Set seeds for reproducibility
+  if(!is.null(seed)) {
+    set.seed(seed)
+    parallel::clusterSetRNGStream(cl, seed)
+  }
+
   parallel::clusterExport(cl, c("X", "residuals", "N", "m", "get_hall_stat"), envir =
                   environment())
 
@@ -112,7 +135,7 @@ monotonicity_test <- function(X,
 
 #' Generate Kernel Plot
 #'
-#' Creates a scatter plot of the input vectors `X` and `Y`, and overlays a Nadaraya-Watson kernel regression curve using the specified bandwidth.
+#' Creates a scatter plot of the input vectors \eqn{X} and \eqn{Y}, and overlays a Nadaraya-Watson kernel regression curve using the specified bandwidth.
 #'
 #' @param X Vector of x values.
 #' @param Y Vector of y values.
@@ -122,6 +145,18 @@ monotonicity_test <- function(X,
 #'   Nadaraya, E. A. (1964). On estimating regression. \emph{Theory of Probability and Its Applications}, \strong{9}(1), 141–142.
 #'
 #'   Watson, G. S. (1964). Smooth estimates of regression functions. \emph{Sankhyā: The Indian Journal of Statistics, Series A}, 359-372.
+#'
+#' @examples
+#' # Example 1: Basic plot on quadratic function
+#' seed <- 42
+#' set.seed(seed)
+#' # Generate sample data
+#' X <- runif(500)
+#' Y <- X ^ 2 + rnorm(500, sd = 0.1)
+#'
+#' # Plot with default bandwidth
+#' plot <- create_kernel_plot(X, Y, bandwidth = bw.nrd(X) * (length(X) ^ -0.1))
+#' plot
 #' @export
 create_kernel_plot <-
   function(X, Y, bandwidth = bw.nrd(X) * (length(X) ^ -0.1)) {

@@ -17,7 +17,19 @@ create_kernel_plot(X, Y, bandwidth = bw.nrd(X) * (length(X)^-0.1))
 A recorded plot object containing the scatter plot with the kernel regression curve.
 }
 \description{
-Creates a scatter plot of the input vectors `X` and `Y`, and overlays a Nadaraya-Watson kernel regression curve using the specified bandwidth.
+Creates a scatter plot of the input vectors \eqn{X} and \eqn{Y}, and overlays a Nadaraya-Watson kernel regression curve using the specified bandwidth.
+}
+\examples{
+# Example 1: Basic plot on quadratic function
+seed <- 42
+set.seed(seed)
+# Generate sample data
+X <- runif(500)
+Y <- X ^ 2 + rnorm(500, sd = 0.1)
+
+# Plot with default bandwidth
+plot <- create_kernel_plot(X, Y, bandwidth = bw.nrd(X) * (length(X) ^ -0.1))
+plot
 }
 \references{
 Nadaraya, E. A. (1964). On estimating regression. \emph{Theory of Probability and Its Applications}, \strong{9}(1), 141–142.
