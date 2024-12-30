@@ -28,7 +28,7 @@ std::tuple<MatrixXd, MatrixXd> rls_update_cpp(const MatrixXd &P,
 // Uses recursive least squares instead of ordinary least squares at each step
 // [[Rcpp::export]]
 double get_hall_stat(const Eigen::VectorXd &x, const Eigen::VectorXd &y,
-                           int m) {
+                     int m) {
   int n = x.size();
 
   // If the length of the data is less than window size m, return NA

@@ -20,12 +20,15 @@ monotonicity_test(
 
 \item{Y}{Numeric vector of response variable values. Must not contain missing or infinite values.}
 
-\item{bandwidth}{Numeric value for the kernel bandwidth. Default is calculated as \code{bw.nrd(X) * (length(X) ^ -0.1)}.}
+\item{bandwidth}{Numeric value for the kernel bandwidth used in the Nadaraya-Watson estimator. Default is calculated as \code{bw.nrd(X) * (length(X) ^ -0.1)}.}
 
 \item{boot_num}{Integer specifying the number of bootstrap samples. Default is \code{200}.}
 
-\item{m}{Integer parameter used in the calculation of the test statistic. Corresponds to the minimum window size
-to calculate the test statistic over or a "smoothing" parameter. Default is \code{floor(0.05 * length(X))}.}
+\item{m}{Integer parameter used in the calculation of the test statistic.
+Corresponds to the minimum window size
+to calculate the test statistic over or a "smoothing" parameter.
+Lower values increase the sensitivity of the test to local deviations from monotonicity.
+Default is \code{floor(0.05 * length(X))}.}
 
 \item{ncores}{Integer specifying the number of cores to use for parallel processing. Default is \code{1}.}
 
@@ -36,7 +39,7 @@ to calculate the test statistic over or a "smoothing" parameter. Default is \cod
 \value{
 A list with the following components:
 \describe{
-  \item{\code{p}}{The p-value of the test.}
+  \item{\code{p}}{The p-value of the test. A small p-value (e.g., < 0.05) suggests evidence against the null hypothesis of monotonicity.}
   \item{\code{dist}}{The distribution of test statistic under the null from bootstrap samples.
                      The length of \code{dist} is equal to \code{boot_num}}.
   \item{\code{stat}}{The test statistic calculated from the original data.}

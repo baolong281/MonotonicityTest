@@ -15,16 +15,19 @@
 #'
 #' @param X Numeric vector of predictor variable values. Must not contain missing or infinite values.
 #' @param Y Numeric vector of response variable values. Must not contain missing or infinite values.
-#' @param bandwidth Numeric value for the kernel bandwidth. Default is calculated as \code{bw.nrd(X) * (length(X) ^ -0.1)}.
+#' @param bandwidth Numeric value for the kernel bandwidth used in the Nadaraya-Watson estimator. Default is calculated as \code{bw.nrd(X) * (length(X) ^ -0.1)}.
 #' @param boot_num Integer specifying the number of bootstrap samples. Default is \code{200}.
-#' @param m Integer parameter used in the calculation of the test statistic. Corresponds to the minimum window size
-#' to calculate the test statistic over or a "smoothing" parameter. Default is \code{floor(0.05 * length(X))}.
+#' @param m Integer parameter used in the calculation of the test statistic.
+#' Corresponds to the minimum window size
+#' to calculate the test statistic over or a "smoothing" parameter.
+#' Lower values increase the sensitivity of the test to local deviations from monotonicity.
+#' Default is \code{floor(0.05 * length(X))}.
 #' @param ncores Integer specifying the number of cores to use for parallel processing. Default is \code{1}.
 #' @param negative Logical value indicating whether to test for a monotonic decreasing (negative) relationship. Default is \code{FALSE}.
 #' @param seed Optional integer for setting the random seed. If NULL (default), the global random state is used.
 #' @return A list with the following components:
 #' \describe{
-#'   \item{\code{p}}{The p-value of the test.}
+#'   \item{\code{p}}{The p-value of the test. A small p-value (e.g., < 0.05) suggests evidence against the null hypothesis of monotonicity.}
 #'   \item{\code{dist}}{The distribution of test statistic under the null from bootstrap samples.
 #'                      The length of \code{dist} is equal to \code{boot_num}}.
 #'   \item{\code{stat}}{The test statistic calculated from the original data.}
@@ -66,21 +69,14 @@ monotonicity_test <- function(X,
                       seed = NULL
                       ) {
 
-  # Check if values are NA, NaN or infinite.
-  if (any(!is.finite(X)) || any(!is.finite(Y))) {
-    stop("X and Y must contain only finite values (no NA, NaN, or Inf).")
-  }
+  validate_inputs(X, Y, m)
+
+  N <- length(X)
 
   # Invert the data if testing for negativity
   if(negative) {
     Y <- -Y
   }
-
-  if(length(X) != length(Y)) {
-    stop("X and Y must be the same length.")
-  }
-
-  N <- length(X)
 
   # Data needs to be sorted for the test to work
   data_order <- order(X)
@@ -131,6 +127,28 @@ monotonicity_test <- function(X,
 
   p_val <- sum(t_vals >= t_stat) / length(t_vals)
   return(list(p = p_val, dist = t_vals, stat = t_stat))
+}
+
+# Validate X, Y, m inputs.
+# Throws an error if invalid input otherwise returns nothing.
+validate_inputs <- function(X, Y, m) {
+  # Check if values are NA, NaN or infinite.
+  if (any(!is.finite(X)) || any(!is.finite(Y))) {
+    stop("X and Y must contain only finite values (no NA, NaN, or Inf).")
+  }
+
+  if (!is.numeric(X) || !is.numeric(Y)) {
+    stop("X and Y must be numeric vectors.")
+  }
+
+  if(length(X) != length(Y)) {
+    stop("X and Y must be the same length.")
+  }
+
+  # Check if m is valid
+  if (!(is.numeric(m) && m == as.integer(m)) || (length(X) - m <= 0) || m <= 0) {
+    stop("m must be a positive integer less than the length of the dataset.")
+  }
 }
 
 #' Generate Kernel Plot

@@ -54,6 +54,7 @@ test_that("Check if monotonicity_test input validation works", {
     "X and Y must be the same length"
   )
 
+
   # Check if invalid M throws errors
   m_too_large <- N + 1
   expect_error(
@@ -61,17 +62,22 @@ test_that("Check if monotonicity_test input validation works", {
     "m must be a positive integer less than the length of the dataset"
   )
 
+
   m_not_integer <- 50.5
   expect_error(
     MonotonicityTest::monotonicity_test(X_valid, Y_valid, m = m_not_integer),
     "m must be a positive integer less than the length of the dataset"
   )
 
+
   m_negative <- -10
   expect_error(
     MonotonicityTest::monotonicity_test(X_valid, Y_valid, m = m_negative),
     "m must be a positive integer less than the length of the dataset"
   )
+
+  return()
+
 })
 
 test_that("create_kernel_plot generates a plot without errors", {
