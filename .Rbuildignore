@@ -2,3 +2,4 @@
 ^\.Rproj\.user$
 ^MonotonicityTest.*\.pdf$
 ^src/compile_flags\.txt$
+^RPlots\.pdf$

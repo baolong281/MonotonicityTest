@@ -76,8 +76,6 @@ test_that("Check if monotonicity_test input validation works", {
     "m must be a positive integer less than the length of the dataset"
   )
 
-  return()
-
 })
 
 test_that("create_kernel_plot generates a plot without errors", {
