@@ -1,8 +1,7 @@
 # MonotonicityTest
 
-## TODO
+View the tutorial at the following URL:
 
--   [ ] Write examples and descriptions
--   [x] More verbose tests
--   [x] Change parlapply to work with windows
--   [ ] Add plots
+https://htmlpreview.github.io/?https://github.com/baolong281/MonotonicityTest/blob/main/tutorial.html
+
+
