@@ -1,0 +1,92 @@
+---
+title: "Tutorial for main functions in MonotonicityTest package"
+author: "Dylan Huynh"
+date: "2025-01-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+```
+
+This package provides functions to visualize data and perform monotonicity tests using nonparametric and bootstrap-based methods. The goal is to test if some response variable `Y` is strictly increasing, or decreasing with larger values of some predictor `X`. A detailed explanation of this test is available in Hall and Heckman (2000, The Annals of Statistics, doi:10.1214/aos/1016120363).
+
+The main functions provided are `monotonicity_test` and `create_kernel_plot`. 
+The function `monotonicity_test` conducts a nonparametric bootstrap test for monotonicity between two numeric vectors `X` and `Y`. The `create_kernel_plot` provides a visualization of the kernel regression we will do based on a specific kernel bandwidth.
+
+We will use this to analyze the `Wage` dataset from `ISLR` which contains wage data for 3000 male workers. We use this dataset
+as we recommend having 300+ points for the kernel estimation being used by the test to be accurate. 
+
+## Preparing Data & Loading Libraries
+```{r, warning=FALSE}
+# If not installed,
+install.packages("ISLR")
+install.packages("MonotonicityTest")
+
+# Loading Libraries
+library(MonotonicityTest)
+library(ISLR)
+
+# Loading data
+data(Wage)
+data <- Wage
+
+head(data)
+```
+
+We are particularly interested in two variables,
+
+- **`age`**: Age of the worker
+- **`wage`**: Workers raw wage
+
+We would expect `wage` to monotonically increase with the age, and want to analyze this.
+
+
+## Choosing Kernel Bandwidth
+
+The first thing we need to do is choose an appropriate kernel bandwidth using the `create_kernel_plot` function.
+
+```{r}
+X <- data$age
+Y <- data$wage
+
+create_kernel_plot(X, Y)
+create_kernel_plot(X, Y, bandwidth = 1)
+create_kernel_plot(X, Y, bandwidth = 1.5)
+create_kernel_plot(X, Y, bandwidth = 2)
+create_kernel_plot(X, Y, bandwidth = 2.5)
+create_kernel_plot(X, Y, bandwidth = 3)
+create_kernel_plot(X, Y, bandwidth = 3.5)
+create_kernel_plot(X, Y, bandwidth = 4)
+```
+
+From here, `bandwidth=3` seems like a fitting choice for the bandwidth.
+
+## Performing Test
+
+We can now use the `monotonocity_test` function to test monotonicity between the `age` and `wage` columns. 
+I will set `ncores=4` to speed up the computation and `boot_num=200` for a good balanced between runtime and precision. I will also set the random seed for reproducability.
+
+```{r}
+seed <- 42
+set.seed(seed)
+
+bandwidth <- 3
+ncores = 4
+boot_num <- 200
+
+monotonicity_test(
+  X, 
+  Y,
+  ncores = ncores,
+  boot_num = boot_num,
+  bandwidth = bandwidth,
+  negative= FALSE,
+  seed = seed
+)
+```
+
+From the output we get our p-value, our test-statistic, and the bootstrap distribution of the test-statistic under the null, that the function is monotonic. If this p-value were less than our chosen $\alpha$ we would reject the null in favor of the alternative hypothesis, that the function is non-monotonic. 
+
+

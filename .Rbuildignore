@@ -3,3 +3,5 @@
 ^MonotonicityTest.*\.pdf$
 ^src/compile_flags\.txt$
 ^RPlots\.pdf$
+^tutorial\.Rmd$
+^tutorial\.html$
