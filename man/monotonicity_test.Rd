@@ -16,38 +16,51 @@ monotonicity_test(
 )
 }
 \arguments{
-\item{X}{Numeric vector of predictor variable values. Must not contain missing or infinite values.}
+\item{X}{Numeric vector of predictor variable values.
+Must not contain missing or infinite values.}
 
-\item{Y}{Numeric vector of response variable values. Must not contain missing or infinite values.}
+\item{Y}{Numeric vector of response variable values.
+Must not contain missing or infinite values.}
 
-\item{bandwidth}{Numeric value for the kernel bandwidth used in the Nadaraya-Watson estimator. Default is calculated as \code{bw.nrd(X) * (length(X) ^ -0.1)}.}
+\item{bandwidth}{Numeric value for the kernel bandwidth used in the
+Nadaraya-Watson estimator. Default is calculated as
+\code{bw.nrd(X) * (length(X) ^ -0.1)}.}
 
-\item{boot_num}{Integer specifying the number of bootstrap samples. Default is \code{200}.}
+\item{boot_num}{Integer specifying the number of bootstrap samples.
+Default is \code{200}.}
 
 \item{m}{Integer parameter used in the calculation of the test statistic.
-Corresponds to the minimum window size
-to calculate the test statistic over or a "smoothing" parameter.
-Lower values increase the sensitivity of the test to local deviations from monotonicity.
+Corresponds to the minimum window size to calculate the test
+statistic over or a "smoothing" parameter. Lower values increase
+the sensitivity of the test to local deviations from monotonicity.
 Default is \code{floor(0.05 * length(X))}.}
 
-\item{ncores}{Integer specifying the number of cores to use for parallel processing. Default is \code{1}.}
+\item{ncores}{Integer specifying the number of cores to use for parallel
+processing. Default is \code{1}.}
 
-\item{negative}{Logical value indicating whether to test for a monotonic decreasing (negative) relationship. Default is \code{FALSE}.}
+\item{negative}{Logical value indicating whether to test for a monotonic
+decreasing (negative) relationship. Default is \code{FALSE}.}
 
-\item{seed}{Optional integer for setting the random seed. If NULL (default), the global random state is used.}
+\item{seed}{Optional integer for setting the random seed. If NULL (default),
+the global random state is used.}
 }
 \value{
 A list with the following components:
 \describe{
-  \item{\code{p}}{The p-value of the test. A small p-value (e.g., < 0.05) suggests evidence against the null hypothesis of monotonicity.}
-  \item{\code{dist}}{The distribution of test statistic under the null from bootstrap samples.
-                     The length of \code{dist} is equal to \code{boot_num}}.
+  \item{\code{p}}{The p-value of the test. A small p-value (e.g., < 0.05)
+                  suggests evidence against the null hypothesis of
+                  monotonicity.}
+  \item{\code{dist}}{The distribution of test statistic under the null from
+                     bootstrap samples. The length of \code{dist} is equal
+                     to \code{boot_num}.}
   \item{\code{stat}}{The test statistic calculated from the original data.}
 }
 }
 \description{
-Performs a monotonicity test between the vectors \eqn{X} and \eqn{Y} as described in Hall and Heckman (2000).
-This function uses a bootstrap approach to test for monotonicity in a nonparametric regression setting.
+Performs a monotonicity test between the vectors \eqn{X} and \eqn{Y}
+as described in Hall and Heckman (2000).
+This function uses a bootstrap approach to test for monotonicity
+in a nonparametric regression setting.
 }
 \details{
 The test evaluates the following hypotheses:
@@ -61,31 +74,33 @@ The test evaluates the following hypotheses:
 \strong{\eqn{H_A}}: The regression function is not monotonic
 }
 \note{
-For large datasets (e.g., \eqn{n \geq 6500}) this function may require significant computation time due to having to compute the statistic for every possible interval.
-Consider reducing \code{boot_num}, using a subset of the data, or using parallel processing with \code{ncores} to improve performance.
+For large datasets (e.g., \eqn{n \geq 6500}) this function may require
+      significant computation time due to having to compute the statistic
+      for every possible interval. Consider reducing \code{boot_num}, using
+      a subset of the data, or using parallel processing with \code{ncores}
+      to improve performance.
 
-In addition to this, a minimum of 300 observations is recommended for kernel estimates to be reliable.
+      In addition to this, a minimum of 300 observations is recommended for
+      kernel estimates to be reliable.
 }
 \examples{
 # Example 1: Usage on monotonic increasing function
 # Generate sample data
 seed <- 42
 set.seed(seed)
-# Generate sample data
 X <- runif(500)
 Y <- 4 * X + rnorm(500, sd = 1)
-
-monotonicity_test(X, Y, boot_num=25, seed=seed)
+monotonicity_test(X, Y, boot_num = 25, seed = seed)
 
 # Example 2: Usage on non-monotonic function
 seed <- 42
 set.seed(seed)
-# Generate sample data
 X <- runif(500)
 Y <- (X - 0.5) ^ 2 + rnorm(500, sd = 0.5)
-
-monotonicity_test(X, Y, boot_num=25, seed=seed)
+monotonicity_test(X, Y, boot_num = 25, seed = seed)
 }
 \references{
-Hall, P., & Heckman, N. E. (2000). Testing for monotonicity of a regression mean by calibrating for linear functions. \emph{The Annals of Statistics}, \strong{28}(1), 20–39.
+Hall, P., & Heckman, N. E. (2000). Testing for monotonicity of a regression
+  mean by calibrating for linear functions. \emph{The Annals of Statistics},
+  \strong{28}(1), 20–39.
 }

@@ -12,7 +12,7 @@ License: GPL
 Encoding: UTF-8
 RoxygenNote: 7.3.2
 LinkingTo: Rcpp, RcppEigen
-Imports: Rcpp (>= 1.0.13-1), parallel, stats, graphics, grDevices
+Imports: Rcpp (>= 1.0.13-1), parallel, stats, graphics, grDevices, ggplot2 (>= 3.0.0)
 Suggests: testthat (>= 3.0.0)
 Config/testthat/edition: 3
 NeedsCompilation: yes

@@ -191,25 +191,23 @@ validate_inputs <- function(X, Y, m) {
 create_kernel_plot <-
   function(X, Y, bandwidth = bw.nrd(X) * (length(X) ^ -0.1)) {
     # Set up the range for the x-axis
-    x_range <-
-      seq(min(X), max(X), length.out = 500)  # Fine grid for smooth curve
-
-    # Compute Watson estimates
+    x_range <- seq(min(X), max(X), length.out = 500)
     y_values <- watson_est(X, Y, x_range, bandwidth = bandwidth)
 
-    plot(
-      X,
-      Y,
-      main = paste("Nadaraya Watson", "bandwidth =", round(bandwidth, 4)),
-      xlab = "X",
-      ylab = "Y",
-      pch = 16
-    )
+    # Create plot
+    p <- ggplot2::ggplot(data.frame(X, Y), ggplot2::aes(x = X, y = Y)) +
+      ggplot2::geom_point() +
+      ggplot2::geom_line(
+        data = data.frame(x = x_range, y = y_values),
+        ggplot2::aes_string(x = "x", y = "y"),
+        color = "green",
+        linewidth = 1.5
+      ) +
+      ggplot2::ggtitle(paste("Nadaraya Watson", "bandwidth =", round(bandwidth, 4))) +
+      ggplot2::xlab("X") +
+      ggplot2::ylab("Y")
 
-    # Add the smoothed curve
-    lines(x_range, y_values, col = "green", lwd = 5.0)
-
-    return(recordPlot())
+    return(p)
   }
 
 # Get estimates with Nadaraya Watson kernel regression

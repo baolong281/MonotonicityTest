@@ -11,28 +11,31 @@ create_kernel_plot(X, Y, bandwidth = bw.nrd(X) * (length(X)^-0.1))
 
 \item{Y}{Vector of y values.}
 
-\item{bandwidth}{Kernel bandwidth used for the Nadaraya-Watson estimator. Default is calculated as \code{bw.nrd(X) * (length(X) ^ -0.1)}.}
+\item{bandwidth}{Kernel bandwidth used for the Nadaraya-Watson estimator.
+Default is calculated as
+\code{bw.nrd(X) * (length(X) ^ -0.1)}.}
 }
 \value{
-A recorded plot object containing the scatter plot with the kernel regression curve.
+A recorded plot object containing the scatter plot with the kernel
+        regression curve.
 }
 \description{
-Creates a scatter plot of the input vectors \eqn{X} and \eqn{Y}, and overlays a Nadaraya-Watson kernel regression curve using the specified bandwidth.
+Creates a scatter plot of the input vectors \eqn{X} and \eqn{Y}, and overlays
+a Nadaraya-Watson kernel regression curve using the specified bandwidth.
 }
 \examples{
 # Example 1: Basic plot on quadratic function
 seed <- 42
 set.seed(seed)
-# Generate sample data
 X <- runif(500)
 Y <- X ^ 2 + rnorm(500, sd = 0.1)
-
-# Plot with default bandwidth
 plot <- create_kernel_plot(X, Y, bandwidth = bw.nrd(X) * (length(X) ^ -0.1))
 plot
 }
 \references{
-Nadaraya, E. A. (1964). On estimating regression. \emph{Theory of Probability and Its Applications}, \strong{9}(1), 141–142.
+Nadaraya, E. A. (1964). On estimating regression. \emph{Theory of
+  Probability and Its Applications}, \strong{9}(1), 141–142.
 
-  Watson, G. S. (1964). Smooth estimates of regression functions. \emph{Sankhyā: The Indian Journal of Statistics, Series A}, 359-372.
+  Watson, G. S. (1964). Smooth estimates of regression functions.
+  \emph{Sankhyā: The Indian Journal of Statistics, Series A}, 359-372.
 }
