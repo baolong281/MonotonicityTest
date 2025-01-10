@@ -1,9 +1,13 @@
 Package: MonotonicityTest
 Type: Package
+Author: Dylan Huynh [aut, cre]
+Maintainer: Dylan Huynh <dylanhuynh@utexas.edu>
+Authors@R: person(given = "Dylan",
+                  family = "Huynh",
+                  role = c("aut", "cre"),
+                  email = "dylanhuynh@utexas.edu")
 Title: Nonparametric Bootstrap Test for Regression Monotonicity
 Version: 1.0
-Author: Dylan Huynh
-Maintainer: Dylan Huynh <dylanhuynh@utexas.edu>
 Description: Implements nonparametric bootstrap tests for detecting monotonicity
   in regression functions from Hall, P. and Heckman, N. (2000) <doi:10.1214/aos/1016120363>
   Includes tools for visualizing results using Nadaraya-Watson kernel regression and supports 
@@ -12,7 +16,7 @@ License: GPL
 Encoding: UTF-8
 RoxygenNote: 7.3.2
 LinkingTo: Rcpp, RcppEigen
-Imports: Rcpp (>= 1.0.13-1), parallel, stats, graphics, grDevices, ggplot2 (>= 3.0.0)
+Imports: Rcpp (>= 1.0.13-1), parallel, stats, graphics, grDevices, ggplot2 (>= 3.0.0), rlang
 Suggests: testthat (>= 3.0.0)
 Config/testthat/edition: 3
 NeedsCompilation: yes

@@ -16,7 +16,7 @@ Default is calculated as
 \code{bw.nrd(X) * (length(X) ^ -0.1)}.}
 }
 \value{
-A recorded plot object containing the scatter plot with the kernel
+A ggplot object containing the scatter plot with the kernel
         regression curve.
 }
 \description{
@@ -30,7 +30,7 @@ set.seed(seed)
 X <- runif(500)
 Y <- X ^ 2 + rnorm(500, sd = 0.1)
 plot <- create_kernel_plot(X, Y, bandwidth = bw.nrd(X) * (length(X) ^ -0.1))
-plot
+
 }
 \references{
 Nadaraya, E. A. (1964). On estimating regression. \emph{Theory of

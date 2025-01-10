@@ -170,7 +170,7 @@ validate_inputs <- function(X, Y, m) {
 #' @param bandwidth Kernel bandwidth used for the Nadaraya-Watson estimator.
 #'                  Default is calculated as
 #'                  \code{bw.nrd(X) * (length(X) ^ -0.1)}.
-#' @return A recorded plot object containing the scatter plot with the kernel
+#' @return A ggplot object containing the scatter plot with the kernel
 #'         regression curve.
 #' @references
 #'   Nadaraya, E. A. (1964). On estimating regression. \emph{Theory of
@@ -186,7 +186,7 @@ validate_inputs <- function(X, Y, m) {
 #' X <- runif(500)
 #' Y <- X ^ 2 + rnorm(500, sd = 0.1)
 #' plot <- create_kernel_plot(X, Y, bandwidth = bw.nrd(X) * (length(X) ^ -0.1))
-#' plot
+#'
 #' @export
 create_kernel_plot <-
   function(X, Y, bandwidth = bw.nrd(X) * (length(X) ^ -0.1)) {
@@ -195,17 +195,17 @@ create_kernel_plot <-
     y_values <- watson_est(X, Y, x_range, bandwidth = bandwidth)
 
     # Create plot
-    p <- ggplot2::ggplot(data.frame(X, Y), ggplot2::aes(x = X, y = Y)) +
-      ggplot2::geom_point() +
-      ggplot2::geom_line(
+    p <- ggplot(data.frame(X, Y), aes(x = X, y = Y)) +
+      geom_point() +
+      geom_line(
         data = data.frame(x = x_range, y = y_values),
-        ggplot2::aes_string(x = "x", y = "y"),
+        aes(x = .data$x, y = .data$y),
         color = "green",
         linewidth = 1.5
       ) +
-      ggplot2::ggtitle(paste("Nadaraya Watson", "bandwidth =", round(bandwidth, 4))) +
-      ggplot2::xlab("X") +
-      ggplot2::ylab("Y")
+      ggtitle(paste("Nadaraya Watson", "bandwidth =", round(bandwidth, 4))) +
+      xlab("X") +
+      ylab("Y")
 
     return(p)
   }
