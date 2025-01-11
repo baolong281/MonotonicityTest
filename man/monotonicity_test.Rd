@@ -53,7 +53,10 @@ A list with the following components:
   \item{\code{dist}}{The distribution of test statistic under the null from
                      bootstrap samples. The length of \code{dist} is equal
                      to \code{boot_num}.}
-  \item{\code{stat}}{The test statistic calculated from the original data.}
+  \item{\code{stat}}{The test statistic \eqn{T_m} calculated from the original data.}
+  \item{\code{plot}}{Plot where the points of the "critical interval" are highlighted.
+                     this critical interval is the interval where \eqn{T_m}
+                     is greatest. }
 }
 }
 \description{

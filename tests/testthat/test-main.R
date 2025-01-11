@@ -16,6 +16,7 @@ test_that("Check monotonicity_test works for valid inputs", {
   expect_type(res$p, "double")
   expect_type(res$stat, "double")
   expect_true(is.vector(res$dist))
+  expect_s3_class(res$plot, "ggplot")
 })
 
 test_that("Check if monotonicity_test input validation works", {

@@ -26,9 +26,9 @@ std::tuple<MatrixXd, MatrixXd> rls_update_cpp(const MatrixXd &P,
 
 // Calculate the hall statistic given a X and Y vector
 // Uses recursive least squares instead of ordinary least squares at each step
+// Also returns the "critical interval" where the t-statistic is the largest
 // [[Rcpp::export]]
-double get_hall_stat(const Eigen::VectorXd &x, const Eigen::VectorXd &y,
-                     int m) {
+List get_hall_stat(const Eigen::VectorXd &x, const Eigen::VectorXd &y, int m) {
   int n = x.size();
 
   // If the length of the data is less than window size m, return NA
@@ -36,7 +36,9 @@ double get_hall_stat(const Eigen::VectorXd &x, const Eigen::VectorXd &y,
     stop("m parameter must be less than the length of the data");
   }
 
+  // initialize max_t_m and the critical interval
   auto max_t_m = -INFINITY;
+  auto interval = std::make_tuple(-1, -1);
 
   // Start at each point
   for (int r = 0; r <= n - m; r++) {
@@ -90,12 +92,15 @@ double get_hall_stat(const Eigen::VectorXd &x, const Eigen::VectorXd &y,
       // Calculate the t-statistic
       double t_stat = -w(1, 0) * q_sq;
 
-      // Update max_t_m if necessary
+      // Update max_t_m and the critical interval if necessary
       if (t_stat > max_t_m) {
         max_t_m = t_stat;
+        interval = std::make_tuple(r, s);
       }
     }
   }
 
-  return max_t_m;
+  return List::create(Named("max_t_m") = max_t_m,
+                      Named("interval") = NumericVector::create(
+                          std::get<0>(interval), std::get<1>(interval)));
 }

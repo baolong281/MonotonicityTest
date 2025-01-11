@@ -43,7 +43,10 @@
 #'   \item{\code{dist}}{The distribution of test statistic under the null from
 #'                      bootstrap samples. The length of \code{dist} is equal
 #'                      to \code{boot_num}.}
-#'   \item{\code{stat}}{The test statistic calculated from the original data.}
+#'   \item{\code{stat}}{The test statistic \eqn{T_m} calculated from the original data.}
+#'   \item{\code{plot}}{Plot where the points of the "critical interval" are highlighted.
+#'                      this critical interval is the interval where \eqn{T_m}
+#'                      is greatest. }
 #' }
 #' @note For large datasets (e.g., \eqn{n \geq 6500}) this function may require
 #'       significant computation time due to having to compute the statistic
@@ -97,7 +100,9 @@ monotonicity_test <-
     Y <- Y[data_order]
 
     # Get stat for actual dataset
-    t_stat <- get_hall_stat(X, Y, m)
+    original_result <- get_hall_stat(X, Y, m)
+    t_stat <- original_result$max_t_m
+    original_interval <- original_result$interval
 
     residuals <-
       calc_residuals_from_estimator(X, Y, bandwidth = bandwidth)
@@ -114,7 +119,7 @@ monotonicity_test <-
       resampled_x <- resampled_x[resample_order]
       resampled_residuals <- resampled_residuals[resample_order]
 
-      t_stat <- get_hall_stat(resampled_x, resampled_residuals, m)
+      t_stat <- get_hall_stat(resampled_x, resampled_residuals, m)$max_t_m
       return(t_stat)
     }
 
@@ -133,9 +138,25 @@ monotonicity_test <-
     t_vals <- unlist(parallel::parLapply(cl, 1:boot_num, boot_func))
     parallel::stopCluster(cl)
 
+    plot <- plot_interval(X, Y, original_interval, title = "Monotonicity Test: Highlighted Interval")
+
     p_val <- sum(t_vals >= t_stat) / length(t_vals)
-    return(list(p = p_val, dist = t_vals, stat = t_stat))
+    return(list(p = p_val, dist = t_vals, stat = t_stat, plot = plot))
   }
+
+# Plot the "critical" interval which has the highest t-stat
+plot_interval <- function(X, Y, interval, title = "Critical Interval Plot") {
+  plot_data <- data.frame(X = X, Y = Y)
+  plot_data$InInterval <- ifelse(seq_along(X) >= interval[1] & seq_along(X) <= interval[2], "Yes", "No")
+
+  # Create the plot
+  plot <- ggplot(plot_data, aes(x = X, y = Y, color = .data$InInterval)) +
+    geom_point(size = 2) +
+    scale_color_manual(values = c("No" = "black", "Yes" = "red")) +
+    labs(title = title, x = "X", y = "Y", color = "Critical Interval")
+
+  return(plot)
+}
 
 # Validate X, Y, m inputs.
 # Throws an error if invalid input otherwise returns nothing.

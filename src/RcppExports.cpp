@@ -12,7 +12,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // get_hall_stat
-double get_hall_stat(const Eigen::VectorXd& x, const Eigen::VectorXd& y, int m);
+List get_hall_stat(const Eigen::VectorXd& x, const Eigen::VectorXd& y, int m);
 RcppExport SEXP _MonotonicityTest_get_hall_stat(SEXP xSEXP, SEXP ySEXP, SEXP mSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
