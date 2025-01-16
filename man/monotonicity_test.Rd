@@ -54,9 +54,12 @@ A list with the following components:
                      bootstrap samples. The length of \code{dist} is equal
                      to \code{boot_num}.}
   \item{\code{stat}}{The test statistic \eqn{T_m} calculated from the original data.}
-  \item{\code{plot}}{Plot where the points of the "critical interval" are highlighted.
-                     this critical interval is the interval where \eqn{T_m}
-                     is greatest. }
+  \item{\code{plot}}{A ggplot object with a scatter plot where the points of the
+                     "critical interval" are highlighted. This critical interval
+                      is the interval where \eqn{T_m} is greatest. }
+  \item{\code{interval}}{Numeric vector containing the indices of the "critical interval".
+                         The first index indicates where the interval starts, and
+                         the second indicates where it ends in the sorted \code{X} vector.}
 }
 }
 \description{
@@ -91,16 +94,29 @@ For large datasets (e.g., \eqn{n \geq 6500}) this function may require
 # Generate sample data
 seed <- 42
 set.seed(seed)
+
 X <- runif(500)
 Y <- 4 * X + rnorm(500, sd = 1)
-monotonicity_test(X, Y, boot_num = 25, seed = seed)
+result <- monotonicity_test(X, Y, boot_num = 25, seed = seed)
+
+print(result$p)
+print(result$stat)
+print(result$dist)
+print(result$interval)
 
 # Example 2: Usage on non-monotonic function
 seed <- 42
 set.seed(seed)
+
 X <- runif(500)
 Y <- (X - 0.5) ^ 2 + rnorm(500, sd = 0.5)
-monotonicity_test(X, Y, boot_num = 25, seed = seed)
+result <- monotonicity_test(X, Y, boot_num = 25, seed = seed)
+
+print(result$p)
+print(result$stat)
+print(result$dist)
+print(result$interval)
+
 }
 \references{
 Hall, P., & Heckman, N. E. (2000). Testing for monotonicity of a regression

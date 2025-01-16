@@ -11,7 +11,7 @@ Version: 1.0
 Description: Implements nonparametric bootstrap tests for detecting monotonicity
   in regression functions from Hall, P. and Heckman, N. (2000) <doi:10.1214/aos/1016120363>
   Includes tools for visualizing results using Nadaraya-Watson kernel regression and supports 
-  efficient computation with C++.
+  efficient computation with 'C++'.
 License: GPL
 Encoding: UTF-8
 RoxygenNote: 7.3.2

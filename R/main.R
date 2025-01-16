@@ -44,9 +44,12 @@
 #'                      bootstrap samples. The length of \code{dist} is equal
 #'                      to \code{boot_num}.}
 #'   \item{\code{stat}}{The test statistic \eqn{T_m} calculated from the original data.}
-#'   \item{\code{plot}}{Plot where the points of the "critical interval" are highlighted.
-#'                      this critical interval is the interval where \eqn{T_m}
-#'                      is greatest. }
+#'   \item{\code{plot}}{A ggplot object with a scatter plot where the points of the
+#'                      "critical interval" are highlighted. This critical interval
+#'                       is the interval where \eqn{T_m} is greatest. }
+#'   \item{\code{interval}}{Numeric vector containing the indices of the "critical interval".
+#'                          The first index indicates where the interval starts, and
+#'                          the second indicates where it ends in the sorted \code{X} vector.}
 #' }
 #' @note For large datasets (e.g., \eqn{n \geq 6500}) this function may require
 #'       significant computation time due to having to compute the statistic
@@ -66,16 +69,29 @@
 #' # Generate sample data
 #' seed <- 42
 #' set.seed(seed)
+#'
 #' X <- runif(500)
 #' Y <- 4 * X + rnorm(500, sd = 1)
-#' monotonicity_test(X, Y, boot_num = 25, seed = seed)
+#' result <- monotonicity_test(X, Y, boot_num = 25, seed = seed)
+#'
+#' print(result$p)
+#' print(result$stat)
+#' print(result$dist)
+#' print(result$interval)
 #'
 #' # Example 2: Usage on non-monotonic function
 #' seed <- 42
 #' set.seed(seed)
+#'
 #' X <- runif(500)
 #' Y <- (X - 0.5) ^ 2 + rnorm(500, sd = 0.5)
-#' monotonicity_test(X, Y, boot_num = 25, seed = seed)
+#' result <- monotonicity_test(X, Y, boot_num = 25, seed = seed)
+#'
+#' print(result$p)
+#' print(result$stat)
+#' print(result$dist)
+#' print(result$interval)
+#'
 #' @export
 monotonicity_test <-
   function(X,
@@ -86,7 +102,7 @@ monotonicity_test <-
            ncores = 1,
            negative = FALSE,
            seed = NULL) {
-    validate_inputs(X, Y, m)
+    validate_inputs(X, Y, m=m)
     N <- length(X)
 
     # Invert the data if testing for negativity
@@ -102,13 +118,13 @@ monotonicity_test <-
     # Get stat for actual dataset
     original_result <- get_hall_stat(X, Y, m)
     t_stat <- original_result$max_t_m
-    original_interval <- original_result$interval
+    crit_interval <- original_result$interval
 
     residuals <-
       calc_residuals_from_estimator(X, Y, bandwidth = bandwidth)
 
     boot_func <- function(i) {
-      # Resample each x and y value
+      # Resample each x and y (residuals) independently
       resampled_x_ind <- sample(1:N, size = N, replace = TRUE)
       resampled_residuals_ind <- sample(1:N, size = N, replace = TRUE)
 
@@ -138,18 +154,23 @@ monotonicity_test <-
     t_vals <- unlist(parallel::parLapply(cl, 1:boot_num, boot_func))
     parallel::stopCluster(cl)
 
-    plot <- plot_interval(X, Y, original_interval, title = "Monotonicity Test: Highlighted Interval")
-
+    plot <- plot_interval(X, Y, crit_interval, title = "Monotonicity Test: Critical Interval")
     p_val <- sum(t_vals >= t_stat) / length(t_vals)
-    return(list(p = p_val, dist = t_vals, stat = t_stat, plot = plot))
+
+    return(list(
+      p = p_val,
+      dist = t_vals,
+      stat = t_stat,
+      plot = plot,
+      interval = crit_interval
+    ))
   }
 
-# Plot the "critical" interval which has the highest t-stat
-plot_interval <- function(X, Y, interval, title = "Critical Interval Plot") {
+# Plot the "critical interval" which has the highest t-stat
+plot_interval <- function(X, Y, interval, title) {
   plot_data <- data.frame(X = X, Y = Y)
   plot_data$InInterval <- ifelse(seq_along(X) >= interval[1] & seq_along(X) <= interval[2], "Yes", "No")
 
-  # Create the plot
   plot <- ggplot(plot_data, aes(x = X, y = Y, color = .data$InInterval)) +
     geom_point(size = 2) +
     scale_color_manual(values = c("No" = "black", "Yes" = "red")) +
@@ -158,9 +179,10 @@ plot_interval <- function(X, Y, interval, title = "Critical Interval Plot") {
   return(plot)
 }
 
-# Validate X, Y, m inputs.
+# Validate X, Y, and optionally, m inputs.
 # Throws an error if invalid input otherwise returns nothing.
-validate_inputs <- function(X, Y, m) {
+# Will only validate m if monotonicty=TRUE, otherwise ignore m validation
+validate_inputs <- function(X, Y, m=NULL, monotonicity=TRUE) {
   # Check if values are NA, NaN or infinite.
   if (any(!is.finite(X)) || any(!is.finite(Y))) {
     stop("X and Y must contain only finite values (no NA, NaN, or Inf).")
@@ -174,9 +196,12 @@ validate_inputs <- function(X, Y, m) {
     stop("X and Y must be the same length.")
   }
 
+  # Early return
+  if(!monotonicity) return()
+
   # Check if m is valid
-  if (!(is.numeric(m) &&
-          m == as.integer(m)) || (length(X) - m <= 0) || m <= 0) {
+  if (!is.numeric(m) ||
+      is.na(m) || m != as.integer(m) || m <= 0 || m >= length(X)) {
     stop("m must be a positive integer less than the length of the dataset.")
   }
 }
@@ -211,12 +236,14 @@ validate_inputs <- function(X, Y, m) {
 #' @export
 create_kernel_plot <-
   function(X, Y, bandwidth = bw.nrd(X) * (length(X) ^ -0.1)) {
+    validate_inputs(X, Y, monotonicity=FALSE)
+
     # Set up the range for the x-axis
     x_range <- seq(min(X), max(X), length.out = 500)
     y_values <- watson_est(X, Y, x_range, bandwidth = bandwidth)
 
     # Create plot
-    p <- ggplot(data.frame(X, Y), aes(x = X, y = Y)) +
+    plot <- ggplot(data.frame(X, Y), aes(x = X, y = Y)) +
       geom_point() +
       geom_line(
         data = data.frame(x = x_range, y = y_values),
@@ -228,7 +255,7 @@ create_kernel_plot <-
       xlab("X") +
       ylab("Y")
 
-    return(p)
+    return(plot)
   }
 
 # Get estimates with Nadaraya Watson kernel regression
