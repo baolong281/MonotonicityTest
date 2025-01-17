@@ -1,9 +1,10 @@
 useDynLib(MonotonicityTest, .registration=TRUE)
 importFrom(Rcpp, evalCpp)
-importFrom("grDevices", "recordPlot")
 importFrom("graphics", "lines")
 importFrom("stats", "bw.nrd", "dnorm")
 importFrom("rlang", ".data")
-importFrom("ggplot2", "aes", "ggplot", "geom_point", "geom_line", "ggtitle", "xlab", "ylab", "scale_color_manual", "labs" )
+importFrom("ggplot2", "aes", "ggplot", "geom_point", "geom_line", "ggtitle",
+           "xlab", "ylab", "scale_color_manual", "labs", "theme", "facet_wrap",
+           "element_rect", "element_text")
 exportPattern("monotonicity_test")
 exportPattern("create_kernel_plot")

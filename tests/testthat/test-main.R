@@ -81,7 +81,15 @@ test_that("Check if monotonicity_test input validation works", {
 })
 
 test_that("Check if create_kernel_plot generates a plot without errors", {
-  result <- create_kernel_plot(X = 1:10, Y = (1:10)^2)
+  X <- 1:10
+  Y <- X ^ 2
+
+  # Normal plot with 1 bandwidth
+  result <- create_kernel_plot(X, Y, bandwidth = 1.5)
+  expect_s3_class(result, "ggplot")
+
+  # Multiple bandwidths bandwidths
+  result <- create_kernel_plot(X, Y, bandwidth = c(1, 2, 3, 4))
   expect_s3_class(result, "ggplot")
 })
 
@@ -90,6 +98,17 @@ test_that("Check if create_kernel_plot input validation works", {
   N <- 200
   X_valid <- runif(N)
   Y_valid <- rnorm(N)
+
+  # Check if negative or non-integer nrows throws errors
+  expect_error(
+    MonotonicityTest::create_kernel_plot(X_valid, Y_valid, nrows=0),
+    "'nrows' must be an integer greater than zero"
+  )
+
+  expect_error(
+    MonotonicityTest::create_kernel_plot(X_valid, Y_valid, nrows=0.4),
+    "'nrows' must be an integer greater than zero"
+  )
 
   # Check if having non-finite values throws exception
   X_na <- X_valid
@@ -102,21 +121,21 @@ test_that("Check if create_kernel_plot input validation works", {
   X_nan <- X_valid
   X_nan[1] <- NaN
   expect_error(
-    MonotonicityTest::monotonicity_test(X_nan, Y_valid),
+    MonotonicityTest::create_kernel_plot(X_nan, Y_valid),
     "X and Y must contain only finite values"
   )
 
   X_inf <- X_valid
   X_inf[1] <- Inf
   expect_error(
-    MonotonicityTest::monotonicity_test(X_inf, Y_valid),
+    MonotonicityTest::create_kernel_plot(X_inf, Y_valid),
     "X and Y must contain only finite values"
   )
 
   # Check if inequal lengths throws error
   Y_wrong_length <- rnorm(N + 1)
   expect_error(
-    MonotonicityTest::monotonicity_test(X_valid, Y_wrong_length),
+    MonotonicityTest::create_kernel_plot(X_valid, Y_wrong_length),
     "X and Y must be the same length"
   )
 })
