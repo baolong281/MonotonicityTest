@@ -269,7 +269,7 @@ create_kernel_plot <-
     points_df <- data.frame(X = X, Y = Y)
 
     # Atleast 1 column
-    n_cols <- max(length(bandwidth_list) %/% nrows, 1)
+    n_cols <- max(ceiling(length(bandwidth_list) / nrows), 1)
 
     # Create facet wrap / grid plot
     plot <- ggplot() +
