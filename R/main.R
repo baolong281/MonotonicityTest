@@ -171,10 +171,18 @@ plot_interval <- function(X, Y, interval, title) {
   plot_data <- data.frame(X = X, Y = Y)
   plot_data$InInterval <- ifelse(seq_along(X) >= interval[1] & seq_along(X) <= interval[2], "Yes", "No")
 
+  interval_data <- plot_data[plot_data$InInterval == "Yes", ]
+
+  lm_model <- lm(Y ~ X, data = interval_data)
+
+  slope <- coef(lm_model)[2]
+  intercept <- coef(lm_model)[1]
+
   plot <- ggplot(plot_data, aes(x = X, y = Y, color = .data$InInterval)) +
     geom_point(size = 2) +
+    geom_abline(slope = slope, intercept = intercept, color = "red", linetype = "dashed", linewidth=1.5) +
     scale_color_manual(values = c("No" = "black", "Yes" = "red")) +
-    labs(title = title, x = "X", y = "Y", color = "Critical Interval")
+    labs(title = paste(title, " (Slope: ", round(slope, 3), ")", sep=""), x = "X", y = "Y", color = "Critical Interval")
 
   return(plot)
 }
