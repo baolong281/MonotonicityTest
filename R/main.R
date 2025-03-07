@@ -154,6 +154,11 @@ monotonicity_test <-
     t_vals <- unlist(parallel::parLapply(cl, 1:boot_num, boot_func))
     parallel::stopCluster(cl)
 
+    # Un-invert the data for our plot
+    if (negative) {
+      Y <- -Y
+    }
+
     plot <- plot_interval(X, Y, crit_interval, title = "Monotonicity Test: Critical Interval")
     p_val <- sum(t_vals >= t_stat) / length(t_vals)
 
