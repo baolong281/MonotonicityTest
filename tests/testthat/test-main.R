@@ -12,6 +12,7 @@ test_that("Check monotonicity_test works for valid inputs", {
                                         ncores = 1)
 
   # Check all types match
+  expect_s3_class(res, "monotonicity_result")
   expect_equal(boot_num, length(res$dist))
   expect_type(res$p, "double")
   expect_type(res$stat, "double")

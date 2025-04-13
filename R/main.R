@@ -162,12 +162,13 @@ monotonicity_test <-
     plot <- plot_interval(X, Y, crit_interval, title = "Monotonicity Test: Critical Interval")
     p_val <- sum(t_vals >= t_stat) / length(t_vals)
 
-    return(list(
+    return(new_monotonicity_result(
       p = p_val,
       dist = t_vals,
       stat = t_stat,
       plot = plot,
-      interval = crit_interval
+      interval = crit_interval,
+      seed = seed
     ))
   }
 
@@ -266,6 +267,7 @@ create_kernel_plot <-
     }
 
     bandwidth_list <- as.list(bandwidth)
+    sorted_bandwidths <- sort(bandwidth)
 
     # Set up the range for the x-axis
     x_range <- seq(min(X), max(X), length.out = 500)
@@ -276,7 +278,11 @@ create_kernel_plot <-
       y_vals <- watson_est(X, Y, x_range, bandwidth = bw)
       data.frame(x = x_range,
                  y = y_vals,
-                 bandwidth = sprintf("bandwidth = %.3f", bw))
+                 bandwidth = factor(
+                   bw,
+                   levels = sorted_bandwidths,
+                   labels = sprintf("bandwidth = %.3f", sorted_bandwidths)
+                 ))
     }, bandwidth_list))
 
     points_df <- data.frame(X = X, Y = Y)

@@ -7,7 +7,7 @@ Authors@R: person(given = "Dylan",
                   role = c("aut", "cre"),
                   email = "dylanhuynh@utexas.edu")
 Title: Nonparametric Bootstrap Test for Regression Monotonicity
-Version: 1.1
+Version: 1.2
 Description: Implements nonparametric bootstrap tests for detecting monotonicity
   in regression functions from Hall, P. and Heckman, N. (2000) <doi:10.1214/aos/1016120363>
   Includes tools for visualizing results using Nadaraya-Watson kernel regression and supports 
@@ -16,8 +16,9 @@ License: GPL
 Encoding: UTF-8
 RoxygenNote: 7.3.2
 LinkingTo: Rcpp, RcppEigen
-Imports: Rcpp (>= 1.0.13-1), parallel, stats, graphics, ggplot2 (>= 3.0.0), rlang
+Imports: Rcpp (>= 1.0.13-1), parallel, stats, graphics, ggplot2 (>=
+        3.0.0), rlang
 Suggests: testthat (>= 3.0.0)
 Config/testthat/edition: 3
 NeedsCompilation: yes
-Packaged: 2024-12-18 20:57:58 UTC; dylanh
+Packaged: 2025-03-09 23:50:24 UTC; dylanh
