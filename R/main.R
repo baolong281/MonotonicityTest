@@ -168,6 +168,7 @@ monotonicity_test <-
       stat = t_stat,
       plot = plot,
       interval = crit_interval,
+      bandwidth=bandwidth,
       seed = seed
     ))
   }

@@ -19,6 +19,10 @@ test_that("Check monotonicity_test works for valid inputs", {
   expect_true(is.vector(res$dist))
   expect_true(is.vector(res$interval))
   expect_s3_class(res$plot, "ggplot")
+
+  # Making sure s3 methods print
+  expect_output(print(res))
+  expect_output(summary(res))
 })
 
 test_that("Check if monotonicity_test input validation works", {

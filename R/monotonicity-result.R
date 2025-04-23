@@ -1,10 +1,13 @@
 # File contains methods associated with the "monotonicity_result" class
 
 new_monotonicity_result <- function(p = double(), dist=numeric(), stat=double(),
-                                    plot = ggplot( ), interval = numeric(), seed=NULL) {
+                                    plot = ggplot( ), interval = numeric(),
+                                    bandwidth = double(),
+                                    seed=NULL) {
   stopifnot(is.double(p))
   stopifnot(is.numeric(dist))
   stopifnot(is.double(stat))
+  stopifnot(is.double(bandwidth))
   stopifnot(is.numeric(interval))
   stopifnot(length(interval) == 2)
 
@@ -15,6 +18,7 @@ new_monotonicity_result <- function(p = double(), dist=numeric(), stat=double(),
       stat = stat,
       plot = plot,
       interval = interval,
+      bandwidth=bandwidth,
       seed = seed
     ),
     class = "monotonicity_result"
@@ -31,11 +35,10 @@ summary.monotonicity_result <- function(object, ...) {
   x <- object
   cat("\n")
   cat(sprintf("P-Value: %-10.3f     T-Statistic: %-10.3f\n", x$p, x$stat))
-  cat(sprintf("Critical Interval: [%d, %d]   Random Seed: %s\n\n",
+  cat(sprintf("Critical Interval: [%d, %d]   Random Seed: %s\n",
               x$interval[1], x$interval[2],
               if (is.null(x$seed)) "<none>" else as.character(x$seed)))
-
-
+  cat(sprintf("Bandwidth Value: %.3f\n\n", object$bandwidth))
 
   dist <- x$dist
   dist_stats <- c(
