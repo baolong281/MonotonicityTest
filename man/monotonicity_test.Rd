@@ -99,10 +99,7 @@ X <- runif(500)
 Y <- 4 * X + rnorm(500, sd = 1)
 result <- monotonicity_test(X, Y, boot_num = 25, seed = seed)
 
-print(result$p)
-print(result$stat)
-print(result$dist)
-print(result$interval)
+print(result)
 
 # Example 2: Usage on non-monotonic function
 seed <- 42
@@ -112,10 +109,7 @@ X <- runif(500)
 Y <- (X - 0.5) ^ 2 + rnorm(500, sd = 0.5)
 result <- monotonicity_test(X, Y, boot_num = 25, seed = seed)
 
-print(result$p)
-print(result$stat)
-print(result$dist)
-print(result$interval)
+print(result)
 
 }
 \references{

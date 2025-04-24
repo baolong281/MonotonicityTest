@@ -25,12 +25,15 @@ new_monotonicity_result <- function(p = double(), dist=numeric(), stat=double(),
   )
 }
 
+#' @export
 print.monotonicity_result <- function(x, ...) {
   cat("\n")
   cat(sprintf("P-Value: %.3f\n", x$p))
   cat(sprintf("T-Statistic: %.3f\n\n", x$stat))
+  cat("Call 'summary()' for more information.\n")
 }
 
+#' @export
 summary.monotonicity_result <- function(object, ...) {
   x <- object
   cat("\n")
@@ -64,6 +67,7 @@ summary.monotonicity_result <- function(object, ...) {
   )
 }
 
+#' @export
 plot.monotonicity_result <- function(x, ...) {
   print(x$plot)
 }
