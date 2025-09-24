@@ -95,6 +95,7 @@ monotonicity_test <-
            m = floor(0.05 * length(X)),
            ncores = 1,
            negative = FALSE,
+           check_m = FALSE,
            seed = NULL) {
     validate_inputs(X, Y, m=m)
     N <- length(X)
@@ -109,13 +110,23 @@ monotonicity_test <-
     X <- X[data_order]
     Y <- Y[data_order]
 
+    m_grid <- c(m)
+
+    if(check_m) {
+      m_grid <- c(
+        round(seq(from = 20, to = 0.50 * N, length.out = 10)),
+        m_grid
+      )
+    }
+
     # Get stat for actual dataset
-    original_result <- get_hall_stat(X, Y, m)
-    t_stat <- original_result$max_t_m
-    crit_interval <- original_result$interval
+    original_result <- get_hall_stat(X, Y, m_grid)
+    t_stats <- original_result$t_values
+    crit_intervals <- original_result$intervals
 
     residuals <-
       calc_residuals_from_estimator(X, Y, bandwidth = bandwidth)
+
 
     boot_func <- function(i) {
       # Resample each x and y (residuals) independently
@@ -129,8 +140,7 @@ monotonicity_test <-
       resampled_x <- resampled_x[resample_order]
       resampled_residuals <- resampled_residuals[resample_order]
 
-      t_stat <- get_hall_stat(resampled_x, resampled_residuals, m)$max_t_m
-      return(t_stat)
+      get_hall_stat(resampled_x, resampled_residuals, m_grid)$t_values
     }
 
     # Do the bootstrap on multiple cores
@@ -145,8 +155,10 @@ monotonicity_test <-
     parallel::clusterExport(cl, c("X", "residuals", "N", "m", "get_hall_stat"),
                             envir = environment())
 
-    t_vals <- unlist(parallel::parLapply(cl, 1:boot_num, boot_func))
+    t_vals <- parallel::parLapply(cl, 1:boot_num, boot_func)
     parallel::stopCluster(cl)
+
+    crit_interval = crit_intervals[[length(m_grid)]]
 
     # Un-invert the data for our plot
     if (negative) {
@@ -154,167 +166,17 @@ monotonicity_test <-
     }
 
     plot <- plot_interval(X, Y, crit_interval, title = "Monotonicity Test: Critical Interval")
-    p_val <- sum(t_vals >= t_stat) / length(t_vals)
 
     return(new_monotonicity_result(
-      p = p_val,
-      dist = t_vals,
-      stat = t_stat,
       plot = plot,
-      interval = crit_interval,
+      t_stats = t_stats,
+      t_distributions = t_vals,
+      m_grid = m_grid,
+      intervals = crit_intervals,
       bandwidth=bandwidth,
-      seed = seed
+      seed = seed,
+      check_m = check_m
     ))
   }
 
-# Plot the "critical interval" which has the highest t-stat
-plot_interval <- function(X, Y, interval, title) {
-  plot_data <- data.frame(X = X, Y = Y)
-  plot_data$InInterval <- ifelse(seq_along(X) >= interval[1] & seq_along(X) <= interval[2], "Yes", "No")
 
-  interval_data <- plot_data[plot_data$InInterval == "Yes", ]
-
-  lm_model <- lm(Y ~ X, data = interval_data)
-
-  slope <- coef(lm_model)[2]
-  intercept <- coef(lm_model)[1]
-
-  plot <- ggplot(plot_data, aes(x = X, y = Y, color = .data$InInterval)) +
-    geom_point(size = 2) +
-    geom_abline(slope = slope, intercept = intercept, color = "red", linetype = "dashed", linewidth=1.5) +
-    scale_color_manual(values = c("No" = "black", "Yes" = "red")) +
-    labs(title = paste(title, " (Slope: ", round(slope, 3), ")", sep=""), x = "X", y = "Y", color = "Critical Interval")
-
-  return(plot)
-}
-
-# Validate X, Y, and optionally, m inputs.
-# Throws an error if invalid input otherwise returns nothing.
-# Will only validate m if monotonicty=TRUE, otherwise ignore m validation
-validate_inputs <- function(X, Y, m=NULL, monotonicity=TRUE) {
-  # Check if values are NA, NaN or infinite.
-  if (any(!is.finite(X)) || any(!is.finite(Y))) {
-    stop("X and Y must contain only finite values (no NA, NaN, or Inf).")
-  }
-
-  if (!is.numeric(X) || !is.numeric(Y)) {
-    stop("X and Y must be numeric vectors.")
-  }
-
-  if (length(X) != length(Y)) {
-    stop("X and Y must be the same length.")
-  }
-
-  # Early return
-  if(!monotonicity) return()
-
-  # Check if m is valid
-  if (!is.numeric(m) ||
-      is.na(m) || m != as.integer(m) || m <= 0 || m >= length(X)) {
-    stop("m must be a positive integer less than the length of the dataset.")
-  }
-}
-
-#' Generate Kernel Plot
-#'
-#' Creates a scatter plot of the input vectors \eqn{X} and \eqn{Y}, and overlays
-#' a Nadaraya-Watson kernel regression curve using the specified bandwidth.
-#'
-#' @param X Vector of x values.
-#' @param Y Vector of y values.
-#' @param bandwidth Kernel bandwidth used for the Nadaraya-Watson estimator. Can
-#'                  be a single numeric value or a vector of bandwidths.
-#'                  Default is calculated as
-#'                  \code{bw.nrd(X) * (length(X) ^ -0.1)}.
-#' @param nrows Number of rows in the facet grid if multiple bandwidths are provided.
-#'              Does not do anything if only a single bandwidth value is provided.
-#'              Default is \code{4}.
-#' @return A ggplot object containing the scatter plot(s) with the kernel
-#'         regression curve(s). If a vector of bandwidths is supplied, the plots
-#'         are put into a grid using faceting.
-#' @references
-#'   Nadaraya, E. A. (1964). On estimating regression. \emph{Theory of
-#'   Probability and Its Applications}, \strong{9}(1), 141–142.
-#'
-#'   Watson, G. S. (1964). Smooth estimates of regression functions.
-#'   \emph{Sankhyā: The Indian Journal of Statistics, Series A}, 359-372.
-#'
-#' @examples
-#' # Example 1: Basic plot on quadratic function
-#' seed <- 42
-#' set.seed(seed)
-#' X <- runif(500)
-#' Y <- X ^ 2 + rnorm(500, sd = 0.1)
-#' plot <- create_kernel_plot(X, Y, bandwidth = bw.nrd(X) * (length(X) ^ -0.1))
-#'
-#' @export
-create_kernel_plot <-
-  function(X, Y, bandwidth = bw.nrd(X) * (length(X) ^ -0.1), nrows=4) {
-    validate_inputs(X, Y, monotonicity=FALSE)
-
-    if(!is.numeric(bandwidth)) {
-      stop("'bandwidth' must be numeric value or vector")
-    }
-
-    # Check if nrows is an integer greater than zero
-    if(nrows%%1!=0 | nrows<=0) {
-      stop("'nrows' must be an integer greater than zero")
-    }
-
-    bandwidth_list <- as.list(bandwidth)
-    sorted_bandwidths <- sort(bandwidth)
-
-    # Set up the range for the x-axis
-    x_range <- seq(min(X), max(X), length.out = 500)
-
-    # Map the bandwidths into dataframes with their respective points
-    # then concat with rbind
-    plot_data <- do.call(rbind, Map(function(bw) {
-      y_vals <- watson_est(X, Y, x_range, bandwidth = bw)
-      data.frame(x = x_range,
-                 y = y_vals,
-                 bandwidth = factor(
-                   bw,
-                   levels = sorted_bandwidths,
-                   labels = sprintf("bandwidth = %.3f", sorted_bandwidths)
-                 ))
-    }, bandwidth_list))
-
-    points_df <- data.frame(X = X, Y = Y)
-
-    # Atleast 1 column
-    n_cols <- max(ceiling(length(bandwidth_list) / nrows), 1)
-
-    # Create facet wrap / grid plot
-    plot <- ggplot() +
-      geom_point(data = points_df, aes(x = .data$X, y = .data$Y)) +
-      geom_line(
-        data = plot_data,
-        aes(x = .data$x, y = .data$y),
-        color = "green",
-        linewidth = 1.5
-      ) +
-      facet_wrap( ~ bandwidth, ncol = n_cols) +
-      labs(title = "Nadaraya Watson Kernel Regression",
-           x = "X",
-           y = "Y")
-
-    return(plot)
-  }
-
-# Get estimates with Nadaraya Watson kernel regression
-watson_est <- function(X, Y, preds, bandwidth) {
-  kernel_weights_x <- sapply(preds, function(x_i)
-    dnorm((X - x_i) / bandwidth) / bandwidth)
-  kernel_weights_y <- kernel_weights_x * Y
-
-  return(sapply(1:length(preds), function(i)
-    sum(
-      kernel_weights_y[, i] / sum(kernel_weights_x[, i])
-    )))
-}
-
-# Calculate the residuals after doing kernel regression
-calc_residuals_from_estimator <- function(X, Y, bandwidth) {
-  return(Y - watson_est(X, Y, preds = X, bandwidth = bandwidth))
-}
