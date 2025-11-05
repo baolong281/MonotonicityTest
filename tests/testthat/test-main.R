@@ -105,6 +105,27 @@ test_that("Check if create_kernel_plot generates a plot without errors", {
   expect_s3_class(result, "ggplot")
 })
 
+test_that("Check if check_m runs with no errors", {
+  N <- 200
+  X <- runif(N)
+  Y <- rnorm(N)
+
+  boot_num <- 5
+
+  res <- MonotonicityTest::monotonicity_test(
+    X,
+    Y,
+    boot_num = boot_num,
+    ncores = 1,
+    check_m = TRUE
+  )
+
+  # Check class
+  expect_s3_class(res, "monotonicity_result")
+  expect_no_error(plot(res))
+  expect_no_error(summary(res))
+})
+
 test_that("Check if create_kernel_plot input validation works", {
   # Valid inputs
   N <- 200

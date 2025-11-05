@@ -21,8 +21,8 @@ as we recommend having 300+ points for the kernel estimation being used by the t
 ## Preparing Data & Loading Libraries
 ```{r, warning=FALSE}
 # If not installed,
-install.packages("ISLR")
-install.packages("MonotonicityTest")
+# install.packages("ISLR")
+# install.packages("MonotonicityTest")
 
 # Loading Libraries
 library(MonotonicityTest)
@@ -51,14 +51,7 @@ The first thing we need to do is choose an appropriate kernel bandwidth using th
 X <- data$age
 Y <- data$wage
 
-create_kernel_plot(X, Y)
-create_kernel_plot(X, Y, bandwidth = 1)
-create_kernel_plot(X, Y, bandwidth = 1.5)
-create_kernel_plot(X, Y, bandwidth = 2)
-create_kernel_plot(X, Y, bandwidth = 2.5)
-create_kernel_plot(X, Y, bandwidth = 3)
-create_kernel_plot(X, Y, bandwidth = 3.5)
-create_kernel_plot(X, Y, bandwidth = 4)
+create_kernel_plot(X, Y, bandwidth = seq(1, 5, by=0.5), nrow=3)
 ```
 
 From here, `bandwidth=3` seems like a fitting choice for the bandwidth.
@@ -73,20 +66,27 @@ seed <- 42
 set.seed(seed)
 
 bandwidth <- 3
-ncores = 4
-boot_num <- 200
+ncores <- 4
+boot_num <- 20
 
-monotonicity_test(
+res <- monotonicity_test(
   X, 
   Y,
   ncores = ncores,
   boot_num = boot_num,
   bandwidth = bandwidth,
   negative= FALSE,
-  seed = seed
+  seed = seed,
+  check_m = TRUE  # Run test for different values of m, has no impact on runtime performance
 )
+
+print(res)
 ```
 
-From the output we get our p-value, our test-statistic, and the bootstrap distribution of the test-statistic under the null, that the function is monotonic. If this p-value were less than our chosen $\alpha$ we would reject the null in favor of the alternative hypothesis, that the function is non-monotonic. 
+From the output we get our p-value, our test-statistic, and the bootstrap distribution of the test-statistic under the null, that the function is monotonic. If this p-value were less than our chosen $\alpha$ we would reject the null in favor of the alternative hypothesis, that the function is non-monotonic. We can further call `summary` and `plot` to evaluate the result
+in further detail.
 
-
+```{r}
+summary(res)
+plot(res)
+```

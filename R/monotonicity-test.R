@@ -114,7 +114,7 @@ monotonicity_test <-
 
     if(check_m) {
       m_grid <- c(
-        round(seq(from = 20, to = 0.50 * N, length.out = 10)),
+        round(seq(from = 10, to = 0.80 * N, by =  10)),
         m_grid
       )
     }

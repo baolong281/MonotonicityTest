@@ -5,7 +5,7 @@ importFrom("stats", "bw.nrd", "dnorm", "lm", "coef", "median", "quantile")
 importFrom("rlang", ".data")
 importFrom("ggplot2", "aes", "ggplot", "geom_point", "geom_line", "ggtitle",
            "xlab", "ylab", "scale_color_manual", "labs", "theme", "facet_wrap",
-           "element_rect", "element_text", "geom_abline")
+           "element_rect", "element_text", "geom_abline", "geom_smooth")
 exportPattern("monotonicity_test")
 exportPattern("create_kernel_plot")
 S3method("print", "monotonicity_result")
