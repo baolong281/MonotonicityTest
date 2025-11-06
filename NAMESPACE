@@ -1,11 +1,12 @@
 useDynLib(MonotonicityTest, .registration=TRUE)
 importFrom(Rcpp, evalCpp)
-importFrom("graphics", "lines")
+importFrom("graphics", "lines", "par")
 importFrom("stats", "bw.nrd", "dnorm", "lm", "coef", "median", "quantile")
 importFrom("rlang", ".data")
 importFrom("ggplot2", "aes", "ggplot", "geom_point", "geom_line", "ggtitle",
            "xlab", "ylab", "scale_color_manual", "labs", "theme", "facet_wrap",
            "element_rect", "element_text", "geom_abline", "geom_smooth")
+importFrom("utils", "head")
 exportPattern("monotonicity_test")
 exportPattern("create_kernel_plot")
 S3method("print", "monotonicity_result")

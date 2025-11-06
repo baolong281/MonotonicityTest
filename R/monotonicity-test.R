@@ -35,22 +35,12 @@
 #'                decreasing (negative) relationship. Default is \code{FALSE}.
 #' @param seed Optional integer for setting the random seed. If NULL (default),
 #'            the global random state is used.
-#' @return A list with the following components:
-#' \describe{
-#'   \item{\code{p}}{The p-value of the test. A small p-value (e.g., < 0.05)
-#'                   suggests evidence against the null hypothesis of
-#'                   monotonicity.}
-#'   \item{\code{dist}}{The distribution of test statistic under the null from
-#'                      bootstrap samples. The length of \code{dist} is equal
-#'                      to \code{boot_num}.}
-#'   \item{\code{stat}}{The test statistic \eqn{T_m} calculated from the original data.}
-#'   \item{\code{plot}}{A ggplot object with a scatter plot where the points of the
-#'                      "critical interval" are highlighted. This critical interval
-#'                       is the interval where \eqn{T_m} is greatest. }
-#'   \item{\code{interval}}{Numeric vector containing the indices of the "critical interval".
-#'                          The first index indicates where the interval starts, and
-#'                          the second indicates where it ends in the sorted \code{X} vector.}
-#' }
+#' @param check_m Boolean value indicating whether to run the test for many different
+#'                         values of \code{m}. This produces extra plots when calling
+#'                         \code{plot} and has a marginal impact on performance.
+#'                         Default is \code{FALSE}.
+#' @return A \code{monotonicity_result} object. Has associated `print`,
+#' `summary`, and `plot` S3 functions.
 #' @note For large datasets (e.g., \eqn{n \geq 6500}) this function may require
 #'       significant computation time due to having to compute the statistic
 #'       for every possible interval. Consider reducing \code{boot_num}, using

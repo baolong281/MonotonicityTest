@@ -115,14 +115,14 @@ plot.monotonicity_result <- function(x, ...) {
 
     df <- data.frame(m = m_vals, t = t_vals, p = p_vals)
 
-    p_m_p <- ggplot(df, aes(x = m, y = p)) +
+    p_m_p <- ggplot(df, aes(x = .data$m, y = .data$p)) +
       geom_line(color = "black") +
       geom_point(size = 1.5) +
       labs(x = "m", y = "p-value", title = "Monotonicity Test: Plot of m vs. p")
 
     print(p_m_p)
 
-    p_m_t <- ggplot(df, aes(x = m, y = t)) +
+    p_m_t <- ggplot(df, aes(x = .data$m, y = .data$t)) +
       geom_line(color = "black") +
       geom_point(size = 1.5) +
       labs(x = "m", y = "t-statistic", title = "Monotonicity Test: Plot of m vs. t")
